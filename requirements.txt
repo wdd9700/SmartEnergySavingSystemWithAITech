@@ -1,0 +1,18 @@
+# 智能节能控制系统依赖
+# Python 3.10+
+
+# 核心依赖
+opencv-python>=4.8.0
+onnxruntime>=1.15.0
+numpy>=1.24.0
+pyyaml>=6.0
+
+# 硬件控制（可选，根据实际硬件安装）
+# gpiozero>=1.6.3; platform_machine=='armv7l' or platform_machine=='aarch64'  # 树莓派
+# RPi.GPIO>=0.7.1; platform_machine=='armv7l' or platform_machine=='aarch64'
+
+# 通信（可选）
+# paho-mqtt>=1.6.0
+
+# 开发调试
+pytest>=7.4.0

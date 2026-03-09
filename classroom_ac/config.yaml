@@ -1,0 +1,30 @@
+# 教室空调控制配置
+demo_mode: true
+
+# 检测参数
+model_path: "models/yolov8n.onnx"
+conf_threshold: 0.5
+
+# 区域定义（归一化坐标 0-1）
+zones:
+  - name: "Front"
+    coords: [[0, 0], [0.5, 0], [0.5, 1], [0, 1]]
+  - name: "Back"
+    coords: [[0.5, 0], [1, 0], [1, 1], [0.5, 1]]
+
+# 空调控制参数
+min_people: 3           # 开空调的最少人数
+cooldown_minutes: 5     # 关闭后冷却时间（防止频繁开关）
+target_temp_default: 26 # 默认目标温度
+
+# GPIO设置（树莓派）
+gpio_pin: 18            # 继电器控制
+ir_gpio_pin: 23         # 红外发射
+
+# 智能策略
+power_adjustment:
+  high_threshold: 6     # 人多阈值
+  low_threshold: 3      # 人少阈值
+  temp_high_crowd: 24   # 人多时温度
+  temp_normal: 26       # 正常温度
+  temp_low_crowd: 28    # 人少时温度

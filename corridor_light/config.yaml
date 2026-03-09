@@ -1,0 +1,19 @@
+# 楼道灯控制配置
+demo_mode: true  # true=仅显示状态，false=控制实际硬件
+
+# 检测参数
+model_path: "models/yolov8n.onnx"
+conf_threshold: 0.5  # 检测置信度阈值
+iou_threshold: 0.45  # NMS IoU阈值
+
+# 视频增强
+enhance_method: "clahe"  # clahe|gamma|msrcr
+brightness_threshold: 50  # 低于此值进行增强（0-255）
+
+# 灯光控制
+light_on_delay: 0       # 开灯延迟（秒）
+light_off_delay: 5.0    # 关灯延迟（人离开后等待时间）
+gpio_pin: 17            # 树莓派GPIO引脚
+
+# 视频源（可覆盖）
+source: 0  # 0=默认摄像头，或填写路径/URL
