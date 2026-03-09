@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能节能控制系统 | Smart Energy Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #475569;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: #60a5fa;
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .card-title {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-online {
+            background: #064e3b;
+            color: #34d399;
+        }
+        
+        .status-offline {
+            background: #450a0a;
+            color: #f87171;
+        }
+        
+        .status-warning {
+            background: #451a03;
+            color: #fbbf24;
+        }
+        
+        .chart-container {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #334155;
+            height: 300px;
+            position: relative;
+        }
+        
+        .control-panel {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .log-container {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.75rem;
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #334155;
+        }
+        
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0;
+        }
+        
+        .log-time {
+            color: #64748b;
+        }
+        
+        .log-info { color: #60a5fa; }
+        .log-success { color: #34d399; }
+        .log-warning { color: #fbbf24; }
+        .log-error { color: #f87171; }
+        
+        .node-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .node-item {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .node-info h4 {
+            color: #e2e8f0;
+            margin-bottom: 0.25rem;
+        }
+        
+        .node-info p {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+        
+        .heatmap {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .heatmap-zone {
+            position: absolute;
+            border-radius: 4px;
+            transition: all 0.5s ease;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #34d399;
+            font-size: 0.875rem;
+        }
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #34d399;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #334155;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            color: #60a5fa;
+            border-bottom-color: #60a5fa;
+        }
+        
+        .tab:hover {
+            color: #94a3b8;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <h1>🔋 智能节能控制系统</h1>
+            <div class="live-indicator">
+                <span class="live-dot"></span>
+                <span id="connection-status">连接中...</span>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- 标签页 -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('overview')">总览</div>
+            <div class="tab" onclick="switchTab('corridor')">楼道灯控</div>
+            <div class="tab" onclick="switchTab('classroom')">教室空调</div>
+            <div class="tab" onclick="switchTab('nodes')">节点管理</div>
+            <div class="tab" onclick="switchTab('analytics')">数据分析</div>
+        </div>
+        
+        <!-- 总览 -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">在线节点</span>
+                        <span class="status-badge status-online">运行中</span>
+                    </div>
+                    <div class="card-value" id="total-nodes">0</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">当前人数</span>
+                        <span class="status-badge status-online">实时</span>
+                    </div>
+                    <div class="card-value" id="total-people">0</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">今日节电量</span>
+                        <span class="status-badge status-success">累计</span>
+                    </div>
+                    <div class="card-value" id="energy-saved">0 <span style="font-size: 1rem; color: #64748b;">kWh</span></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">系统状态</span>
+                        <span class="status-badge status-online" id="system-status">正常</span>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: #64748b; font-size: 0.875rem;">CPU</span>
+                            <span id="cpu-usage">0%</span>
+                        </div>
+                        <div style="width: 100%; height: 4px; background: #334155; border-radius: 2px; overflow: hidden;">
+                            <div id="cpu-bar" style="width: 0%; height: 100%; background: #60a5fa; transition: width 0.5s;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: #64748b; font-size: 0.875rem;">内存</span>
+                            <span id="mem-usage">0%</span>
+                        </div>
+                        <div style="width: 100%; height: 4px; background: #334155; border-radius: 2px; overflow: hidden;">
+                            <div id="mem-bar" style="width: 0%; height: 100%; background: #34d399; transition: width 0.5s;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid">
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 1rem; color: #94a3b8;">实时人流热力图</h3>
+                    <div class="heatmap" id="heatmap">
+                        <!-- 动态生成热力区域 -->
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 1rem; color: #94a3b8;">24小时能耗趋势</h3>
+                    <canvas id="energy-chart" style="width: 100%; height: 220px;"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 楼道灯控 -->
+        <div id="tab-corridor" class="tab-content">
+            <div class="control-panel">
+                <button class="btn btn-primary" onclick="controlLight('on')">💡 开灯</button>
+                <button class="btn btn-danger" onclick="controlLight('off')">🌑 关灯</button>
+                <button class="btn btn-success" onclick="controlLight('auto')">🤖 自动模式</button>
+                <button class="btn" onclick="refreshCorridor()" style="background: #475569; color: white;">🔄 刷新</button>
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">灯光状态</span>
+                        <span class="status-badge" id="light-status-badge">未知</span>
+                    </div>
+                    <div class="card-value" id="light-status">--</div>
+                    <p style="margin-top: 1rem; color: #64748b;">
+                        检测人数: <span id="corridor-people" style="color: #e2e8f0;">0</span> |
+                        亮度: <span id="corridor-brightness" style="color: #e2e8f0;">0</span>
+                    </p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">今日统计</span>
+                    </div>
+                    <p style="color: #64748b; margin-bottom: 0.5rem;">开灯次数: <span id="light-on-count">0</span></p>
+                    <p style="color: #64748b; margin-bottom: 0.5rem;">开灯时长: <span id="light-on-time">0</span> min</p>
+                    <p style="color: #64748b;">节省电量: <span id="light-saved">0</span> Wh</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 教室空调 -->
+        <div id="tab-classroom" class="tab-content">
+            <div class="control-panel">
+                <button class="btn btn-primary" onclick="controlAC('on')">❄️ 开空调</button>
+                <button class="btn btn-danger" onclick="controlAC('off')">🌡️ 关空调</button>
+                <button class="btn" onclick="setACTemp(24)">24°C</button>
+                <button class="btn" onclick="setACTemp(26)">26°C</button>
+                <button class="btn" onclick="setACTemp(28)">28°C</button>
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">空调状态</span>
+                        <span class="status-badge" id="ac-status-badge">未知</span>
+                    </div>
+                    <div class="card-value" id="ac-status">--</div>
+                    <p style="margin-top: 1rem; color: #64748b;">
+                        目标温度: <span id="ac-target-temp" style="color: #e2e8f0;">--</span>°C |
+                        区域人数: <span id="classroom-people" style="color: #e2e8f0;">0</span>
+                    </p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">区域分布</span>
+                    </div>
+                    <div id="zone-stats">
+                        <p style="color: #64748b;">加载中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 节点管理 -->
+        <div id="tab-nodes" class="tab-content">
+            <div class="control-panel">
+                <button class="btn btn-primary" onclick="discoverNodes()">🔍 发现节点</button>
+                <button class="btn" onclick="rebalanceNodes()" style="background: #475569; color: white;">⚖️ 负载均衡</button>
+            </div>
+            
+            <div class="node-list" id="node-list">
+                <!-- 动态生成节点列表 -->
+            </div>
+        </div>
+        
+        <!-- 数据分析 -->
+        <div id="tab-analytics" class="tab-content">
+            <div class="control-panel">
+                <button class="btn btn-primary" onclick="generateReport()">📊 生成报告</button>
+                <button class="btn" onclick="exportData()" style="background: #475569; color: white;">💾 导出数据</button>
+            </div>
+            
+            <div class="grid">
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 1rem; color: #94a3b8;">每小时人流量</h3>
+                    <canvas id="people-chart" style="width: 100%; height: 220px;"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 1rem; color: #94a3b8;">设备运行时间</h3>
+                    <canvas id="device-chart" style="width: 100%; height: 220px;"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 系统日志 -->
+        <div style="margin-top: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: #94a3b8;">系统日志</h3>
+            <div class="log-container" id="log-container">
+                <div class="log-entry">
+                    <span class="log-time">[--:--:--]</span>
+                    <span class="log-info">系统初始化完成</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ==================== 全局状态 ====================
+        let currentTab = 'overview';
+        let ws = null;
+        let reconnectInterval = null;
+        
+        // ==================== Tab切换 ====================
+        function switchTab(tabName) {
+            // 隐藏所有tab内容
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // 显示当前tab
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
+            currentTab = tabName;
+        }
+        
+        // ==================== WebSocket连接 ====================
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function() {
+                console.log('WebSocket connected');
+                document.getElementById('connection-status').textContent = '已连接';
+                document.getElementById('connection-status').style.color = '#34d399';
+                clearInterval(reconnectInterval);
+                addLog('WebSocket连接成功', 'success');
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                handleMessage(data);
+            };
+            
+            ws.onclose = function() {
+                console.log('WebSocket disconnected');
+                document.getElementById('connection-status').textContent = '断开';
+                document.getElementById('connection-status').style.color = '#f87171';
+                addLog('WebSocket连接断开，尝试重连...', 'warning');
+                
+                // 重连
+                reconnectInterval = setInterval(() => {
+                    connectWebSocket();
+                }, 5000);
+            };
+            
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                addLog('WebSocket错误', 'error');
+            };
+        }
+        
+        // ==================== 消息处理 ====================
+        function handleMessage(data) {
+            switch(data.type) {
+                case 'status':
+                    updateStatus(data.payload);
+                    break;
+                case 'corridor':
+                    updateCorridor(data.payload);
+                    break;
+                case 'classroom':
+                    updateClassroom(data.payload);
+                    break;
+                case 'nodes':
+                    updateNodes(data.payload);
+                    break;
+                case 'log':
+                    addLog(data.payload.message, data.payload.level);
+                    break;
+            }
+        }
+        
+        // ==================== 状态更新 ====================
+        function updateStatus(data) {
+            document.getElementById('total-nodes').textContent = data.total_nodes || 0;
+            document.getElementById('total-people').textContent = data.total_people || 0;
+            document.getElementById('energy-saved').innerHTML = 
+                `${(data.energy_saved || 0).toFixed(1)} <span style="font-size: 1rem; color: #64748b;">kWh</span>`;
+            
+            document.getElementById('cpu-usage').textContent = `${data.cpu_usage || 0}%`;
+            document.getElementById('cpu-bar').style.width = `${data.cpu_usage || 0}%`;
+            
+            document.getElementById('mem-usage').textContent = `${data.mem_usage || 0}%`;
+            document.getElementById('mem-bar').style.width = `${data.mem_usage || 0}%`;
+        }
+        
+        function updateCorridor(data) {
+            const statusEl = document.getElementById('light-status');
+            const badgeEl = document.getElementById('light-status-badge');
+            
+            if (data.light_on) {
+                statusEl.textContent = '开启';
+                statusEl.style.color = '#fbbf24';
+                badgeEl.textContent = 'ON';
+                badgeEl.className = 'status-badge status-warning';
+            } else {
+                statusEl.textContent = '关闭';
+                statusEl.style.color = '#64748b';
+                badgeEl.textContent = 'OFF';
+                badgeEl.className = 'status-badge status-offline';
+            }
+            
+            document.getElementById('corridor-people').textContent = data.people_count || 0;
+            document.getElementById('corridor-brightness').textContent = data.brightness || 0;
+            document.getElementById('light-on-count').textContent = data.on_count || 0;
+            document.getElementById('light-on-time').textContent = (data.on_time / 60 || 0).toFixed(1);
+            document.getElementById('light-saved').textContent = (data.energy_saved || 0).toFixed(0);
+        }
+        
+        function updateClassroom(data) {
+            const statusEl = document.getElementById('ac-status');
+            const badgeEl = document.getElementById('ac-status-badge');
+            
+            if (data.ac_on) {
+                statusEl.textContent = '运行中';
+                statusEl.style.color = '#34d399';
+                badgeEl.textContent = 'ON';
+                badgeEl.className = 'status-badge status-online';
+            } else {
+                statusEl.textContent = '已关闭';
+                statusEl.style.color = '#64748b';
+                badgeEl.textContent = 'OFF';
+                badgeEl.className = 'status-badge status-offline';
+            }
+            
+            document.getElementById('ac-target-temp').textContent = data.target_temp || '--';
+            document.getElementById('classroom-people').textContent = data.people_count || 0;
+            
+            // 更新区域统计
+            const zoneStatsEl = document.getElementById('zone-stats');
+            if (data.zones) {
+                zoneStatsEl.innerHTML = Object.entries(data.zones).map(([name, count]) => `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="color: #64748b;">${name}</span>
+                        <span style="color: #e2e8f0; font-weight: 600;">${count} 人</span>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        function updateNodes(data) {
+            const listEl = document.getElementById('node-list');
+            if (!data.nodes) return;
+            
+            listEl.innerHTML = data.nodes.map(node => `
+                <div class="node-item">
+                    <div class="node-info">
+                        <h4>${node.id}</h4>
+                        <p>${node.type} | 位置: (${node.x}, ${node.y}) | 状态: ${node.status}</p>
+                    </div>
+                    <span class="status-badge ${node.status === 'online' ? 'status-online' : 'status-offline'}">
+                        ${node.status}
+                    </span>
+                </div>
+            `).join('');
+        }
+        
+        // ==================== 控制命令 ====================
+        function controlLight(action) {
+            fetch('/api/corridor/control', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({action: action})
+            });
+            addLog(`发送灯光控制命令: ${action}`, 'info');
+        }
+        
+        function controlAC(action) {
+            fetch('/api/classroom/control', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({action: action})
+            });
+            addLog(`发送空调控制命令: ${action}`, 'info');
+        }
+        
+        function setACTemp(temp) {
+            fetch('/api/classroom/temp', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({temperature: temp})
+            });
+            addLog(`设置空调温度: ${temp}°C`, 'info');
+        }
+        
+        function refreshCorridor() {
+            fetch('/api/corridor/status')
+                .then(r => r.json())
+                .then(data => updateCorridor(data));
+        }
+        
+        function discoverNodes() {
+            fetch('/api/nodes/discover', {method: 'POST'});
+            addLog('开始发现节点...', 'info');
+        }
+        
+        function rebalanceNodes() {
+            fetch('/api/nodes/rebalance', {method: 'POST'});
+            addLog('执行负载均衡...', 'info');
+        }
+        
+        function generateReport() {
+            window.open('/api/reports/daily', '_blank');
+            addLog('生成日报...', 'success');
+        }
+        
+        function exportData() {
+            window.open('/api/data/export', '_blank');
+            addLog('导出数据...', 'success');
+        }
+        
+        // ==================== 日志 ====================
+        function addLog(message, level = 'info') {
+            const container = document.getElementById('log-container');
+            const time = new Date().toLocaleTimeString();
+            const levelClass = `log-${level}`;
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="${levelClass}">${message}</span>
+            `;
+            
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+            
+            // 限制日志数量
+            while (container.children.length > 100) {
+                container.removeChild(container.firstChild);
+            }
+        }
+        
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            connectWebSocket();
+            addLog('系统界面加载完成', 'success');
+        });
+    </script>
+</body>
+</html>

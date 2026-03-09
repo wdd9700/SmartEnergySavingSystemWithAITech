@@ -1,0 +1,35 @@
+# Jetson Nano专用依赖
+# 安装命令: pip install -r requirements-jetson.txt
+
+# 基础依赖
+numpy>=1.24.0
+pyyaml>=6.0
+psutil>=5.9.0
+requests>=2.31.0
+
+# Jetson专用OpenCV (预编译版本)
+# 如果以下命令失败，使用: sudo apt install python3-opencv
+opencv-python>=4.8.0
+
+# Jetson ONNX Runtime (GPU加速)
+# 需手动下载安装:
+# wget https://nvidia.box.com/shared/static/jy7nqxa8z1mlqnvkhhepqp6y7t8d22vg.whl -O onnxruntime_gpu.whl
+# pip install onnxruntime_gpu.whl
+# 或从Jetson Zoo安装
+
+# Jetson GPIO
+Jetson.GPIO
+
+# Web界面
+flask>=2.3.0
+flask-cors>=4.0.0
+flask-sock>=0.6.0
+
+# 通信
+paho-mqtt>=1.6.0
+
+# 性能优化
+numba>=0.57.0; platform_machine=='aarch64'
+
+# 开发调试
+pytest>=7.4.0
