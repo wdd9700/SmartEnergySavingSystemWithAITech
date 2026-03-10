@@ -1,0 +1,40 @@
+{
+  "schedule": {
+    "monday": [
+      {"start": "08:00", "end": "09:35", "course": "高等数学", "expected_people": 45},
+      {"start": "09:50", "end": "11:25", "course": "大学英语", "expected_people": 40},
+      {"start": "14:00", "end": "15:35", "course": "计算机原理", "expected_people": 35},
+      {"start": "15:50", "end": "17:25", "course": "程序设计", "expected_people": 30}
+    ],
+    "tuesday": [
+      {"start": "08:00", "end": "09:35", "course": "线性代数", "expected_people": 40},
+      {"start": "09:50", "end": "11:25", "course": "数据结构", "expected_people": 35},
+      {"start": "14:00", "end": "15:35", "course": "操作系统", "expected_people": 30},
+      {"start": "19:00", "end": "20:35", "course": "选修课", "expected_people": 25}
+    ],
+    "wednesday": [
+      {"start": "08:00", "end": "09:35", "course": "概率论", "expected_people": 42},
+      {"start": "09:50", "end": "11:25", "course": "算法分析", "expected_people": 30},
+      {"start": "14:00", "end": "17:25", "course": "实验课", "expected_people": 20}
+    ],
+    "thursday": [
+      {"start": "08:00", "end": "09:35", "course": "计算机网络", "expected_people": 35},
+      {"start": "09:50", "end": "11:25", "course": "数据库", "expected_people": 32},
+      {"start": "14:00", "end": "15:35", "course": "软件工程", "expected_people": 28}
+    ],
+    "friday": [
+      {"start": "08:00", "end": "09:35", "course": "人工智能", "expected_people": 25},
+      {"start": "09:50", "end": "11:25", "course": "机器学习", "expected_people": 30},
+      {"start": "14:00", "end": "15:35", "course": "项目实践", "expected_people": 15}
+    ]
+  },
+  "bookings": [
+    {
+      "date": "2026-03-15",
+      "start": "14:00",
+      "end": "16:00",
+      "event": "学术讲座",
+      "expected_people": 50
+    }
+  ]
+}
