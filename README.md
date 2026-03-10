@@ -25,9 +25,27 @@
 
 ### 🏫 教室空调智能调节系统 (Classroom AC Control)
 - **人流密度分析**：多区域热力图可视化
+- **热负荷计算**：
+  - 人体产热: 休息80W/人, 思考100W/人, 轻度运动150W/人
+  - 设备产热: 笔记本20W, 台式机80W (基于实际功率)
+  - 围护结构传热 + 太阳辐射
 - **智能启停**：根据人数自动开关空调
 - **功率调节**：人多降温、人少节能
+- **预测性控制**：
+  - 基于课表提前10分钟预冷
+  - 历史人数趋势分析
+  - 10分钟热负荷预测
 - **防频繁切换**：冷却时间保护机制
+
+### 🖥️ Web管理界面 (v6.0)
+- **远程访问**：纯HTML界面，无需Flask依赖
+- **实时监控**：
+  - 校准后灯光位置可视化
+  - 多摄像头相对位置显示
+  - 人员位置热力图
+- **热负荷分析**：制热/制冷量实时计算与分解
+- **功耗统计**：空调/风扇功耗、累计能耗、成本估算
+- **控制决策日志**：实时显示控制策略
 
 ---
 
@@ -46,11 +64,15 @@ smart-energy/
 │   ├── light_zones.py      # 灯光区域配置管理
 │   ├── brightness_analyzer.py  # 亮度分析模块 (v4)
 │   ├── auto_calibrator.py  # 自动校准工具 (v4)
+│   ├── multi_camera_calibrator.py  # 多摄像头校准 (v4)
 │   ├── enhancer.py         # 视频增强模块
 │   └── __init__.py
 ├── classroom_ac/           # 教室空调智能控制
 │   ├── config.yaml
-│   ├── main.py
+│   ├── main.py             # 主程序v1/v2
+│   ├── main_v3.py          # 主程序v3 (热负荷计算版)
+│   ├── thermal_controller.py  # 热负荷计算与预测控制 (v5)
+│   ├── schedule.json       # 课表配置
 │   ├── people_counter.py   # 人流统计模块
 │   ├── zone_manager.py     # 区域管理模块
 │   ├── ac_controller.py    # 空调控制模块
@@ -60,21 +82,28 @@ smart-energy/
 │   ├── data_recorder.py    # 数据记录与分析
 │   ├── coordination.py     # 多节点协调
 │   ├── jetson_optimizer.py # Jetson优化
-│   ├── mqtt_client.py      # MQTT通信（可选）
+│   ├── environment.py      # 环境感知
 │   └── logger.py           # 日志模块
+├── web/                    # Web管理界面 (v6.0)
+│   ├── dashboard.html      # 管理界面主页面
+│   ├── dashboard_http_server.py  # HTTP服务器
+│   └── templates/          # Flask模板 (可选)
 ├── models/                 # 预训练模型
 │   └── download_models.py  # 模型下载脚本
-├── tests/                  # 测试脚本和视频
-│   ├── test_suite.py       # 自动化测试套件
-│   ├── test_zone_light.py  # 区域灯光测试
-│   ├── test_brightness_calibration.py  # 亮度校准测试
-│   └── test_data_recorder.py  # 数据记录测试
+├── tests/                  # 测试套件
+│   ├── test_suite.py
+│   ├── test_zone_light.py
+│   ├── test_brightness_calibration.py
+│   ├── test_data_recorder.py
+│   ├── test_thermal_control.py
+│   └── test_dashboard.py
 ├── docs/                   # 文档
-│   ├── DEPLOYMENT.md       # 部署指南
-│   ├── HARDWARE.md         # 硬件清单
-│   └── brightness_calibration_architecture.md  # v4架构文档
+│   ├── DEPLOYMENT.md
+│   ├── HARDWARE.md
+│   ├── brightness_calibration_architecture.md
+│   └── thermal_control_v5.md
 ├── requirements.txt
-├── requirements-jetson.txt # Jetson专用依赖
+├── requirements-jetson.txt
 └── README.md
 ```
 
@@ -171,6 +200,24 @@ python -m corridor_light.auto_calibrator --demo
 
 # 查看架构文档
 cat docs/brightness_calibration_architecture.md
+```
+
+**热负荷计算与预测性控制 (v5.0):**
+```bash
+# 基于热负荷的空调控制
+python -m classroom_ac.main_v3 --source 0 --outdoor-temp 32.0
+
+# 查看文档
+cat docs/thermal_control_v5.md
+```
+
+**Web管理界面 (v6.0):**
+```bash
+# 启动管理界面服务器
+python web/dashboard_http_server.py --port 8080
+
+# 远程访问 (替换为服务器实际IP)
+http://服务器IP:8080
 ```
 
 ---
@@ -411,6 +458,47 @@ echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH' >> ~/.bashr
 | `--mode` | str | 'demo' | demo/deploy |
 | `--min-people` | int | 3 | 开空调最少人数 |
 | `--cooldown` | int | 5 | 冷却时间(分钟) |
+
+---
+
+## 📈 版本历史
+
+### v6.0 - Web管理界面
+- 纯HTML管理界面，支持远程访问
+- 灯光位置、摄像头位置可视化
+- 人员热力图、热负荷分析、功耗统计
+- 实时控制决策日志
+
+### v5.0 - 热负荷计算与预测性控制
+- 人体活动状态产热计算 (休息/思考/运动)
+- 电子设备产热检测 (笔记本20W)
+- 围护结构传热、太阳辐射计算
+- 课表驱动的提前预冷/预热
+- 历史趋势分析与负荷预测
+
+### v4.0 - 亮度分析自动校准
+- 基于亮度分析的灯光位置自动校准
+- 多摄像头相对位置校准
+- 等亮度线分析、照明半径估算
+- 无需人工测量的自动定位
+
+### v3.0 - 基于位置的灯光控制
+- 人形脚底位置提取
+- 灯光区域配置管理
+- 只开启人所在和人前方的灯
+- 人离开区域后立即关灯
+
+### v2.0 - 系统增强
+- 多节点协调
+- Jetson优化
+- Web Dashboard基础
+- 能耗分析
+
+### v1.0 - 基础功能
+- 楼道灯智能控制
+- 教室空调控制
+- YOLOv8人形检测
+- 视频增强
 
 ---
 
