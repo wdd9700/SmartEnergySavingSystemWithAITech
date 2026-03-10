@@ -14,8 +14,13 @@
 
 ### 🏠 楼道智能灯控系统 (Corridor Light Control)
 - **低光照视频增强**：CLAHE/Gamma/MSRCR 三种算法自动切换
-- **人形检测**：YOLOv8-nano，5MB模型，CPU实时推理
+- **人形检测**：YOLOv8-nano，6MB模型，CPU实时推理 (9.5 FPS)
+- **多种控制模式**：
+  - 传统模式：单灯整体控制
+  - **区域模式**：基于人形位置的区间控制，只开人所在和人前方的灯
+  - **自动校准**：基于亮度分析自动确定灯位置 (v4.0)
 - **智能控制**：人来灯亮、人走灯灭，支持延迟配置
+- **数据记录**：检测日志、人员热力图、能耗统计
 - **隐私保护**：本地处理，不上传视频
 
 ### 🏫 教室空调智能调节系统 (Classroom AC Control)
@@ -32,10 +37,16 @@
 smart-energy/
 ├── corridor_light/          # 楼道灯智能控制
 │   ├── config.yaml         # 配置文件
-│   ├── main.py             # 主程序入口
-│   ├── detector.py         # 人形检测模块
+│   ├── main.py             # 主程序入口 (传统模式)
+│   ├── main_v3.py          # 主程序v3 (区域模式)
+│   ├── main_unified.py     # 统一主程序 (支持模式切换)
+│   ├── detector.py         # 人形检测模块 (含脚底位置提取)
+│   ├── controller.py       # 传统灯光控制模块
+│   ├── zone_controller.py  # 区域灯光控制模块 (v3)
+│   ├── light_zones.py      # 灯光区域配置管理
+│   ├── brightness_analyzer.py  # 亮度分析模块 (v4)
+│   ├── auto_calibrator.py  # 自动校准工具 (v4)
 │   ├── enhancer.py         # 视频增强模块
-│   ├── controller.py       # 灯光控制模块
 │   └── __init__.py
 ├── classroom_ac/           # 教室空调智能控制
 │   ├── config.yaml
@@ -46,15 +57,22 @@ smart-energy/
 │   └── __init__.py
 ├── shared/                 # 共享模块
 │   ├── video_capture.py    # 视频捕获封装
+│   ├── data_recorder.py    # 数据记录与分析
+│   ├── coordination.py     # 多节点协调
+│   ├── jetson_optimizer.py # Jetson优化
 │   ├── mqtt_client.py      # MQTT通信（可选）
 │   └── logger.py           # 日志模块
 ├── models/                 # 预训练模型
 │   └── download_models.py  # 模型下载脚本
 ├── tests/                  # 测试脚本和视频
-│   └── create_test_videos.py
+│   ├── test_suite.py       # 自动化测试套件
+│   ├── test_zone_light.py  # 区域灯光测试
+│   ├── test_brightness_calibration.py  # 亮度校准测试
+│   └── test_data_recorder.py  # 数据记录测试
 ├── docs/                   # 文档
 │   ├── DEPLOYMENT.md       # 部署指南
-│   └── HARDWARE.md         # 硬件清单
+│   ├── HARDWARE.md         # 硬件清单
+│   └── brightness_calibration_architecture.md  # v4架构文档
 ├── requirements.txt
 ├── requirements-jetson.txt # Jetson专用依赖
 └── README.md
@@ -114,6 +132,45 @@ python -m corridor_light.main --source 0 --mode demo
 **运行教室空调控制系统:**
 ```bash
 python -m classroom_ac.main --source tests/test_classroom.mp4 --mode demo
+```
+
+### 5. 高级功能
+
+**统一主程序 (支持模式切换):**
+```bash
+# 传统模式
+python -m corridor_light.main_unified --source 0 --mode traditional --demo
+
+# 区域模式 (基于位置的智能控制)
+python -m corridor_light.main_unified --source 0 --mode zone_based --demo
+
+# 运行时按 'm' 键切换模式
+```
+
+**数据记录与分析:**
+```bash
+# 启用数据记录 (默认启用)
+python -m corridor_light.main_unified --source 0 --mode zone_based
+
+# 查看数据文件
+ls logs/
+# detections_YYYYMMDD.csv - 检测记录
+# events_YYYYMMDD.csv - 事件记录
+# heatmap_*.jpg - 人员热力图
+
+# Web API查看统计
+curl http://localhost:8080/status
+curl http://localhost:8080/stats
+curl http://localhost:8080/energy
+```
+
+**灯光自动校准 (v4.0):**
+```bash
+# 使用亮度分析自动确定灯光位置
+python -m corridor_light.auto_calibrator --demo
+
+# 查看架构文档
+cat docs/brightness_calibration_architecture.md
 ```
 
 ---
