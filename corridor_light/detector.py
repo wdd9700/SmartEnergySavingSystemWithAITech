@@ -79,7 +79,7 @@ class PersonDetector:
         
         # 归一化: BGR->RGB, 0-255->0-1
         canvas = canvas.transpose(2, 0, 1)  # HWC->CHW
-        canvas = canvas.astype(np.float32) / 255.0
+        canvas = canvas.astype(np.float16) / 255.0
         canvas = np.expand_dims(canvas, axis=0)  # 添加batch维度
         
         return canvas, scale, pad_x, pad_y
@@ -87,10 +87,11 @@ class PersonDetector:
     def detect(self, image: np.ndarray) -> List[Dict]:
         """
         检测图像中的人形
-        
+
         Returns:
             检测结果列表，每项包含:
             - bbox: [x1, y1, x2, y2]
+            - foot_point: (x, y) 脚底中心位置
             - confidence: 置信度
             - class: 类别名称
             - class_id: 类别ID
@@ -155,8 +156,12 @@ class PersonDetector:
         if len(indices) > 0:
             for idx in indices.flatten():
                 x1, y1, x2, y2 = boxes_xyxy[idx].astype(int)
+                # 计算脚底位置 (底部中心点)
+                foot_x = (x1 + x2) // 2
+                foot_y = y2
                 results.append({
                     'bbox': [x1, y1, x2, y2],
+                    'foot_point': (foot_x, foot_y),
                     'confidence': float(class_scores[idx]),
                     'class': self.CLASSES[class_ids[idx]],
                     'class_id': int(class_ids[idx])
