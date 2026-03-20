@@ -1,103 +1,305 @@
-# 智能节能控制系统
-# Intelligent Energy-Saving Control System
+# 建筑智能节能系统 (Building Energy Management System)
 
-基于计算机视觉的校园节能解决方案，包含**楼道智能灯控**和**教室空调智能调节**两个子系统。
+基于计算机视觉和深度学习的建筑能源管理解决方案，包含**楼道智能灯控**、**教室空调智能调节**和**建筑能耗优化**三个子系统。
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![YOLOv8](https://img.shields.io/badge/YOLO-v8-green.svg)](https://github.com/ultralytics/ultralytics)
 [![ONNX Runtime](https://img.shields.io/badge/ONNX-Runtime-orange.svg)](https://onnxruntime.ai/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.1+-red.svg)](https://pytorch.org/)
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
 ---
 
-## 📋 功能特性
+## 🎯 项目简介
 
-### 🏠 楼道智能灯控系统 (Corridor Light Control)
-- **低光照视频增强**：CLAHE/Gamma/MSRCR 三种算法自动切换
-- **人形检测**：YOLOv8-nano，6MB模型，CPU实时推理 (9.5 FPS)
-- **多种控制模式**：
-  - 传统模式：单灯整体控制
-  - **区域模式**：基于人形位置的区间控制，只开人所在和人前方的灯
-  - **自动校准**：基于亮度分析自动确定灯位置 (v4.0)
-- **智能控制**：人来灯亮、人走灯灭，支持延迟配置
-- **数据记录**：检测日志、人员热力图、能耗统计
-- **隐私保护**：本地处理，不上传视频
+本项目旨在通过智能化手段优化建筑能源使用效率，降低能耗成本，提升用户舒适度。系统采用模块化设计，支持灵活部署和扩展。
 
-### 🏫 教室空调智能调节系统 (Classroom AC Control)
-- **人流密度分析**：多区域热力图可视化
-- **热负荷计算**：
-  - 人体产热: 休息80W/人, 思考100W/人, 轻度运动150W/人
-  - 设备产热: 笔记本20W, 台式机80W (基于实际功率)
-  - 围护结构传热 + 太阳辐射
-- **智能启停**：根据人数自动开关空调
-- **功率调节**：人多降温、人少节能
-- **预测性控制**：
-  - 基于课表提前10分钟预冷
-  - 历史人数趋势分析
-  - 10分钟热负荷预测
-- **防频繁切换**：冷却时间保护机制
+### 核心功能
+- **智能感知**：基于计算机视觉的人员检测和行为分析
+- **预测控制**：深度学习驱动的能耗预测和优化控制
+- **知识管理**：GraphRAG驱动的能耗知识问答系统
+- **异常监测**：基于PyOD的设备异常检测和告警
 
-### 🖥️ Web管理界面 (v6.0)
-- **远程访问**：纯HTML界面，无需Flask依赖
-- **实时监控**：
-  - 校准后灯光位置可视化
-  - 多摄像头相对位置显示
-  - 人员位置热力图
-- **热负荷分析**：制热/制冷量实时计算与分解
-- **功耗统计**：空调/风扇功耗、累计能耗、成本估算
-- **控制决策日志**：实时显示控制策略
+---
+
+## 📋 功能模块
+
+### 🏠 方向一：建筑能耗优化系统 (`building_energy/`)
+
+#### 1. 异常检测模块 (`models/anomaly_detector.py`)
+- **技术栈**: PyOD + scikit-learn
+- **功能**: 
+  - 多算法异常检测（Isolation Forest, LOF, ABOD等）
+  - 实时数据流异常监测
+  - 自适应阈值调整
+  - 告警分级管理
+
+#### 2. 知识库模块 (`knowledge/graph_rag.py`)
+- **技术栈**: Sentence-Transformers + FAISS + GraphRAG
+- **功能**:
+  - 文档自动解析（PDF/Markdown）
+  - 语义向量检索
+  - 知识图谱构建
+  - 自然语言问答
+
+#### 3. 预测模型模块 (`models/predictor.py`)
+- **技术栈**: PyTorch + LSTM/Transformer
+- **功能**:
+  - 多变量时间序列预测
+  - 能耗趋势分析
+  - 不确定性量化
+  - 模型自动重训练
+
+#### 4. 强化学习优化 (`env/hvac_env.py`, `train_hvac_rl.py`)
+- **技术栈**: Stable-Baselines3 + Gymnasium
+- **功能**:
+  - HVAC控制策略优化
+  - SAC/PPO/TD3算法支持
+  - EnergyPlus建筑模拟集成
+  - 能耗-舒适度平衡优化
+
+#### 5. 主控制程序 (`main.py`, `cli.py`)
+- **功能**:
+  - 系统生命周期管理
+  - 模块协调调度
+  - CLI交互界面
+  - 实时监控和告警
+
+---
+
+### 🚗 方向二：交通节能系统 (`traffic_energy/` 待开发)
+- **车辆检测与跟踪**：YOLO12 + BoT-SORT
+- **跨摄像头车辆匹配**：FastReID 车辆重识别
+- **交通流量分析**：虚拟线圈检测、速度估计
+- **信号灯配时优化**：强化学习 (Stable-Baselines3) 动态调节
+- **智能充电桩管理**：充电需求预测、错峰调度
+
+> **注意**：方向二（原楼道灯控 `corridor_light/`）已整合到方向一作为子模块
+
+---
+
+### 💻 方向三：计算机节能系统 (`computer_energy/` 待开发)
+- **进程监控**：psutil 定时扫描进程列表
+- **智能关机决策**：LLM 辅助判断进程重要性，自动关机
+- **CPU/GPU 频率调节**：动态调频降低功耗
+- **通知系统**：关机前通知用户，支持取消
+- **任务调度**：APScheduler 定时执行节能策略
+
+> **注意**：方向三（原教室空调 `classroom_ac/`）已整合到方向一作为子模块
+
+---
+
+## 🚀 快速开始
+
+### 安装
+
+```bash
+# 克隆仓库
+git clone <repository-url>
+cd SmartEnergySavinginLightControlandACControl
+
+# 安装方向一依赖
+pip install -r building_energy/requirements.txt
+
+# 安装方向二/三依赖（可选）
+pip install -r requirements.txt
+```
+
+### 使用示例
+
+```bash
+# 初始化配置
+python -m building_energy.cli init
+
+# 启动系统
+python -m building_energy.cli start
+
+# 使用指定配置启动
+python -m building_energy.cli start -c config.yaml
+
+# 查询知识库
+python -m building_energy.cli query "如何优化空调能耗？"
+
+# 查看系统状态
+python -m building_energy.cli status
+
+# 查看告警
+python -m building_energy.cli alerts
+
+# 停止系统
+python -m building_energy.cli stop
+```
+
+### 训练强化学习模型
+
+```bash
+# 快速测试训练
+python building_energy/test_train_quick.py
+
+# 完整训练流程
+python building_energy/train_hvac_rl.py \
+    --algorithm SAC \
+    --timesteps 100000 \
+    --output-dir ./models/rl
+```
 
 ---
 
 ## 📁 项目结构
 
 ```
-smart-energy/
-├── corridor_light/          # 楼道灯智能控制
-│   ├── config.yaml         # 配置文件
-│   ├── main.py             # 主程序入口 (传统模式)
-│   ├── main_v3.py          # 主程序v3 (区域模式)
-│   ├── main_unified.py     # 统一主程序 (支持模式切换)
-│   ├── detector.py         # 人形检测模块 (含脚底位置提取)
-│   ├── controller.py       # 传统灯光控制模块
-│   ├── zone_controller.py  # 区域灯光控制模块 (v3)
-│   ├── light_zones.py      # 灯光区域配置管理
-│   ├── brightness_analyzer.py  # 亮度分析模块 (v4)
-│   ├── auto_calibrator.py  # 自动校准工具 (v4)
-│   ├── multi_camera_calibrator.py  # 多摄像头校准 (v4)
-│   ├── enhancer.py         # 视频增强模块
-│   └── __init__.py
-├── classroom_ac/           # 教室空调智能控制
-│   ├── config.yaml
-│   ├── main.py             # 主程序v1/v2
-│   ├── main_v3.py          # 主程序v3 (热负荷计算版)
-│   ├── thermal_controller.py  # 热负荷计算与预测控制 (v5)
-│   ├── schedule.json       # 课表配置
-│   ├── people_counter.py   # 人流统计模块
-│   ├── zone_manager.py     # 区域管理模块
-│   ├── ac_controller.py    # 空调控制模块
-│   └── __init__.py
-├── shared/                 # 共享模块
-│   ├── video_capture.py    # 视频捕获封装
-│   ├── data_recorder.py    # 数据记录与分析
-│   ├── coordination.py     # 多节点协调
-│   ├── jetson_optimizer.py # Jetson优化
-│   ├── environment.py      # 环境感知
-│   └── logger.py           # 日志模块
-├── web/                    # Web管理界面 (v6.0)
-│   ├── dashboard.html      # 管理界面主页面
-│   ├── dashboard_http_server.py  # HTTP服务器
-│   └── templates/          # Flask模板 (可选)
-├── models/                 # 预训练模型
-│   └── download_models.py  # 模型下载脚本
-├── tests/                  # 测试套件
+SmartEnergySavinginLightControlandACControl/
+├── building_energy/          # 方向一：建筑能耗优化系统
+│   ├── main.py              # 主控制程序
+│   ├── cli.py               # 命令行接口
+│   ├── train_hvac_rl.py     # RL训练脚本
+│   ├── config/              # 配置管理
+│   │   ├── default_config.yaml
+│   │   └── manager.py
+│   ├── core/                # 核心模块
+│   │   └── building_simulator.py
+│   ├── data/                # 数据接口
+│   │   └── weather_api.py
+│   ├── env/                 # RL环境
+│   │   └── hvac_env.py
+│   ├── knowledge/           # 知识库模块
+│   │   ├── graph_rag.py
+│   │   ├── document_loader.py
+│   │   └── example_usage.py
+│   ├── models/              # 模型模块
+│   │   ├── anomaly_detector.py
+│   │   ├── predictor.py
+│   │   └── baseline.py
+│   ├── visualization/       # 可视化
+│   │   └── plots.py
+│   └── requirements.txt     # 依赖列表
+│
+├── traffic_energy/          # 方向二：交通节能系统 (待开发)
+│   ├── detection/           # 车辆检测跟踪
+│   ├── reid/                # 车辆重识别
+│   ├── signal_opt/          # 信号优化
+│   └── charging/            # 充电桩管理
+│
+├── computer_energy/         # 方向三：计算机节能系统 (待开发)
+│   ├── monitor/             # 进程监控
+│   ├── power_manager/       # 电源管理
+│   └── scheduler/           # 任务调度
+│
+├── corridor_light/          # [整合到方向一] 楼道智能灯控
+│   ├── main.py, main_v3.py, main_unified.py
+│   ├── detector.py          # 人形检测
+│   ├── zone_controller.py   # 区域控制
+│   ├── brightness_analyzer.py
+│   ├── auto_calibrator.py
+│   └── config.yaml
+│
+├── classroom_ac/            # [整合到方向一] 教室空调控制
+│   ├── main.py, main_v3.py
+│   ├── thermal_controller.py
+│   ├── people_counter.py
+│   ├── ac_controller.py
+│   └── config.yaml
+│
+├── shared/                  # 共享模块
+│   ├── video_capture.py
+│   ├── data_recorder.py
+│   ├── jetson_optimizer.py
+│   └── logger.py
+│
+├── web/                     # Web管理界面
+│   ├── dashboard.html
+│   ├── dashboard_server.py
+│   └── templates/
+│
+├── tests/                   # 测试套件
 │   ├── test_suite.py
-│   ├── test_zone_light.py
-│   ├── test_brightness_calibration.py
-│   ├── test_data_recorder.py
-│   ├── test_thermal_control.py
-│   └── test_dashboard.py
-├── docs/                   # 文档
+│   ├── test_anomaly_detector.py
+│   ├── test_predictor.py
+│   └── test_knowledge_base.py
+│
+├── docs/                    # 文档
+│   ├── architecture/        # 架构文档
+│   ├── direction1_tech_stack_research.md
+│   ├── direction2_tech_stack_research.md
+│   └── direction3_tech_stack_research.md
+│
+├── models/                  # 预训练模型
+├── innovations/             # 创新功能原型
+└── README.md               # 本文件
+```
+
+---
+
+## 🛠️ 技术栈
+
+### 核心框架
+| 类别 | 技术 |
+|------|------|
+| 编程语言 | Python 3.10+ |
+| 深度学习 | PyTorch 2.1+ |
+| 强化学习 | Stable-Baselines3 2.2+ |
+| 异常检测 | PyOD 1.1+ |
+| 向量检索 | FAISS 1.7+ |
+| 文本嵌入 | Sentence-Transformers 2.2+ |
+| 计算机视觉 | YOLOv8, OpenCV |
+| 建筑模拟 | EnergyPlus (可选) |
+
+### 主要依赖
+```
+numpy>=1.24.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+pyyaml>=6.0
+stable-baselines3>=2.2.0
+gymnasium>=0.29.0
+pyod>=1.1.0
+scikit-learn>=1.3.0
+sentence-transformers>=2.2.0
+faiss-cpu>=1.7.4
+```
+
+---
+
+## 📊 系统架构
+
+详见 [docs/architecture/diagram.md](docs/architecture/diagram.md)
+
+---
+
+## 🤝 贡献指南
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
+
+### 代码规范
+- 遵循 PEP 8 代码风格
+- 使用 Black 进行代码格式化
+- 添加类型注解
+- 编写单元测试
+
+---
+
+## 📄 许可证
+
+本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
+
+---
+
+## 📞 联系方式
+
+如有问题或建议，欢迎提交 Issue 或 Pull Request。
+
+---
+
+## 🙏 致谢
+
+- [Stable-Baselines3](https://stable-baselines3.readthedocs.io/)
+- [PyOD](https://pyod.readthedocs.io/)
+- [YOLOv8](https://github.com/ultralytics/ultralytics)
+- [EnergyPlus](https://energyplus.net/)
 │   ├── DEPLOYMENT.md
 │   ├── HARDWARE.md
 │   ├── brightness_calibration_architecture.md

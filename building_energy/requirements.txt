@@ -1,0 +1,46 @@
+# 建筑智能节能系统依赖
+
+# 核心依赖
+numpy>=1.24.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+pyyaml>=6.0
+requests>=2.31.0
+python-dateutil>=2.8.0
+
+# 强化学习
+stable-baselines3>=2.2.0
+gymnasium>=0.29.0
+tensorboard>=2.14.0
+
+# 建筑能耗模拟 (可选，推荐安装)
+# eppy>=0.5.63  # EnergyPlus Python接口
+# pyenergyplus  # EnergyPlus官方Python API (需单独安装EnergyPlus)
+
+# 异常检测
+pyod>=1.1.0
+scikit-learn>=1.3.0
+
+# 知识库RAG
+sentence-transformers>=2.2.0  # 文本向量嵌入
+faiss-cpu>=1.7.4  # 向量检索（CPU版本）
+# faiss-gpu>=1.7.4  # 向量检索（GPU版本，可选）
+pyyaml>=6.0  # YAML解析（用于Markdown frontmatter）
+pdfplumber>=0.10.0  # PDF解析
+# graphrag>=0.3.0  # 微软GraphRAG（可选）
+# neo4j>=5.14.0    # Neo4j图数据库（可选）
+# chromadb>=0.4.0  # 向量数据库（可选）
+
+# 深度学习 (用于预测模型和异常检测)
+# torch>=2.1.0
+# torchvision>=0.16.0
+
+# 开发工具
+pytest>=7.4.0
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.5.0
+
+# 文档
+sphinx>=7.0.0
+sphinx-rtd-theme>=1.3.0

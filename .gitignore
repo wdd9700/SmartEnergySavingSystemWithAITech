@@ -29,6 +29,14 @@ models/*.weights
 tests/*.mp4
 tests/*.avi
 
+# 测试生成的文件
+*.jpg
+*.jpeg
+*.png
+*.json
+test_*.json
+test_*.jpg
+
 # 系统文件
 .DS_Store
 Thumbs.db

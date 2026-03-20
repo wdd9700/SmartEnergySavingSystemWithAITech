@@ -1,0 +1,227 @@
+# 建筑智能节能系统默认配置
+
+# 系统配置
+system:
+  name: "Building Energy Management System"
+  version: "0.1.0"
+  log_level: "INFO"
+  data_dir: "./data"
+  output_dir: "./output"
+
+# EnergyPlus建筑模拟配置
+simulation:
+  # IDF文件路径（建筑模型）
+  idf_path: "models/building.idf"
+  # 天气文件路径
+  weather_path: "weather/CHN_Beijing.Beijing.545110_CSWD.epw"
+  # 输出目录
+  output_dir: "output/simulation"
+  # 时间步长（分钟）
+  timestep: 15
+  # 模拟天数
+  simulation_days: 1
+  # 是否启用详细输出
+  verbose: false
+
+# HVAC控制配置
+hvac:
+  # 控制模式: "temperature" (温度设定点) 或 "onoff" (开关控制)
+  control_mode: "temperature"
+  # 温度设定点范围 (°C)
+  min_setpoint: 18.0
+  max_setpoint: 26.0
+  # 目标舒适温度 (°C)
+  target_temperature: 22.0
+  # 舒适温度容差 (°C)
+  comfort_tolerance: 1.0
+  # HVAC功率 (kW)
+  hvac_power: 5.0
+  # 是否启用自然通风
+  natural_ventilation: true
+
+# 强化学习配置
+rl:
+  # 算法: "SAC", "PPO", "TD3"
+  algorithm: "SAC"
+  
+  # 训练步数
+  total_timesteps: 100000
+  
+  # 随机种子
+  seed: 42
+  
+  # 学习率
+  learning_rate: 0.0003
+  
+  # 批次大小
+  batch_size: 256
+  
+  # 回放缓冲区大小 (用于SAC, TD3)
+  buffer_size: 100000
+  
+  # 折扣因子
+  gamma: 0.99
+  
+  # Soft update系数 (用于SAC, TD3)
+  tau: 0.005
+  
+  # 训练频率 (每多少步训练一次)
+  train_freq: 1
+  
+  # 每次训练的梯度步数
+  gradient_steps: 1
+  
+  # 学习开始前等待的步数 (用于SAC, TD3)
+  learning_starts: 1000
+  
+  # 熵系数 ("auto"表示自动调整，仅SAC)
+  ent_coef: "auto"
+  
+  # ========== PPO特有配置 ==========
+  # 每次更新收集的步数
+  n_steps: 2048
+  
+  # 每次采样的训练轮数
+  n_epochs: 10
+  
+  # GAE lambda
+  gae_lambda: 0.95
+  
+  # PPO裁剪范围
+  clip_range: 0.2
+  
+  # 值函数裁剪范围 (None表示不裁剪)
+  clip_range_vf: null
+  
+  # 值函数系数
+  vf_coef: 0.5
+  
+  # 最大梯度范数
+  max_grad_norm: 0.5
+  
+  # 是否使用状态依赖探索 (SDE)
+  use_sde: false
+  
+  # SDE采样频率
+  sde_sample_freq: -1
+  
+  # ========== TD3特有配置 ==========
+  # 策略延迟更新步数
+  policy_delay: 2
+  
+  # 目标策略噪声
+  target_policy_noise: 0.2
+  
+  # 目标噪声裁剪
+  target_noise_clip: 0.5
+  
+  # ========== 训练配置 ==========
+  # 训练日志目录
+  log_dir: "output/rl_logs"
+  
+  # 模型保存目录
+  save_dir: "output/models"
+  
+  # 评估频率 (每多少步评估一次)
+  eval_freq: 5000
+  
+  # 评估回合数
+  n_eval_episodes: 5
+  
+  # 并行环境数
+  n_envs: 4
+  
+  # 计算设备: "auto", "cpu", "cuda"
+  device: "auto"
+
+# 奖励函数配置
+reward:
+  # 舒适度权重
+  comfort_weight: 1.0
+  # 能耗权重
+  energy_weight: 0.1
+  # 温度偏离惩罚系数
+  temp_penalty_coeff: 2.0
+  # 最大奖励值
+  max_reward: 0.0
+
+# 天气API配置
+weather:
+  # 提供商: "openweathermap", "weatherapi"
+  provider: "openweathermap"
+  # API密钥（需要从环境变量或配置文件覆盖）
+  api_key: ""
+  # 缓存目录
+  cache_dir: "data/weather_cache"
+  # 缓存有效期（小时）
+  cache_ttl: 1
+  # 默认位置（北京）
+  default_lat: 39.9042
+  default_lon: 116.4074
+
+# OpenWeatherMap特定配置
+openweathermap:
+  # API版本: "2.5", "3.0"
+  api_version: "3.0"
+  # 单位: "metric", "imperial", "standard"
+  units: "metric"
+  # 语言
+  lang: "zh_cn"
+
+# 异常检测配置
+anomaly_detection:
+  # 算法: "isolation_forest", "autoencoder", "lstm"
+  algorithm: "isolation_forest"
+  # 污染率（异常比例估计）
+  contamination: 0.1
+  # 训练数据窗口（小时）
+  training_window: 168
+  # 检测间隔（分钟）
+  detection_interval: 15
+  # 告警阈值
+  alert_threshold: 0.7
+
+# 知识库RAG配置
+rag:
+  # 知识库目录
+  knowledge_base_dir: "data/knowledge_base"
+  # GraphRAG配置
+  graphrag:
+    # 根目录
+    root_dir: "data/graphrag"
+    # 搜索方法: "local", "global", "hybrid"
+    search_method: "hybrid"
+    # 社区层级
+    community_level: 2
+  # 向量数据库配置
+  vector_db:
+    # 类型: "chroma", "milvus", "pgvector"
+    type: "chroma"
+    # 持久化目录
+    persist_dir: "data/vector_db"
+
+# 日志配置
+logging:
+  version: 1
+  disable_existing_loggers: false
+  formatters:
+    standard:
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    detailed:
+      format: "%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s"
+  handlers:
+    console:
+      class: "logging.StreamHandler"
+      level: "INFO"
+      formatter: "standard"
+      stream: "ext://sys.stdout"
+    file:
+      class: "logging.handlers.RotatingFileHandler"
+      level: "DEBUG"
+      formatter: "detailed"
+      filename: "logs/building_energy.log"
+      maxBytes: 10485760  # 10MB
+      backupCount: 5
+  root:
+    level: "INFO"
+    handlers: ["console", "file"]
