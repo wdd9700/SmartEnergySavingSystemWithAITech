@@ -162,8 +162,12 @@ class LightConfig:
         
         return zones
     
-    def save_to_file(self, filepath: str):
-        """保存配置到JSON文件"""
+    def save_to_file(self, filepath: str) -> None:
+        """保存配置到JSON文件
+        
+        Args:
+            filepath: 文件保存路径
+        """
         data = []
         for zone in self.zones.values():
             data.append({
@@ -180,7 +184,14 @@ class LightConfig:
     
     @classmethod
     def load_from_file(cls, filepath: str) -> 'LightConfig':
-        """从JSON文件加载配置"""
+        """从JSON文件加载配置
+        
+        Args:
+            filepath: 配置文件路径
+            
+        Returns:
+            加载的灯光配置对象
+        """
         with open(filepath, 'r', encoding='utf-8') as f:
             data = json.load(f)
         

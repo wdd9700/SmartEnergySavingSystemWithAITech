@@ -171,59 +171,156 @@ class ConfigManager:
         """
         config = TrafficConfig()
         
-        # 系统配置
-        if 'system' in raw:
-            sys_cfg = raw['system']
-            config.system_name = sys_cfg.get('name', config.system_name)
-            config.version = sys_cfg.get('version', config.version)
-            config.log_level = sys_cfg.get('log_level', config.log_level)
-            config.log_dir = sys_cfg.get('log_dir', config.log_dir)
+        # 解析各模块配置
+        config = self._parse_system_config(config, raw)
+        config = self._parse_detection_config(config, raw)
+        config = self._parse_reid_config(config, raw)
         
-        # 检测配置
-        if 'detection' in raw:
-            det_cfg = raw['detection']
-            if 'model' in det_cfg:
-                model = det_cfg['model']
-                config.detection.model = ModelConfig(
-                    name=model.get('name', 'yolo12n.pt'),
-                    conf_threshold=model.get('conf_threshold', 0.5),
-                    iou_threshold=model.get('iou_threshold', 0.45),
-                    device=model.get('device', 'auto'),
-                    classes=model.get('classes', [2, 3, 5, 7])
-                )
-            if 'tracker' in det_cfg:
-                tracker = det_cfg['tracker']
-                config.detection.tracker = TrackerConfig(
-                    type=tracker.get('type', 'botsort'),
-                    track_high_thresh=tracker.get('track_high_thresh', 0.6),
-                    track_low_thresh=tracker.get('track_low_thresh', 0.1),
-                    new_track_thresh=tracker.get('new_track_thresh', 0.7),
-                    track_buffer=tracker.get('track_buffer', 60),
-                    match_thresh=tracker.get('match_thresh', 0.8),
-                    proximity_thresh=tracker.get('proximity_thresh', 0.5),
-                    appearance_thresh=tracker.get('appearance_thresh', 0.25),
-                    cmc_method=tracker.get('cmc_method', 'ecc'),
-                    frame_rate=tracker.get('frame_rate', 30),
-                    lambda_=tracker.get('lambda_', 0.985)
-                )
+        return config
+    
+    def _parse_system_config(self, config: TrafficConfig, raw: Dict[str, Any]) -> TrafficConfig:
+        """解析系统配置
         
-        # ReID配置
-        if 'reid' in raw:
-            reid_cfg = raw['reid']
-            if 'model' in reid_cfg:
-                model = reid_cfg['model']
-                config.reid = ReidConfig(
-                    model_name=model.get('name', 'veriwild_bagtricks_R50-ibn'),
-                    model_path=model.get('path', ''),
-                    device=model.get('device', 'auto'),
-                    input_size=model.get('input_size', [128, 256]),
-                    feature_dim=model.get('feature_dim', 2048)
-                )
-            if 'matching' in reid_cfg:
-                match = reid_cfg['matching']
-                config.reid.similarity_threshold = match.get('similarity_threshold', 0.7)
-                config.reid.top_k = match.get('top_k', 10)
+        Args:
+            config: 当前配置对象
+            raw: 原始配置字典
+            
+        Returns:
+            更新后的配置对象
+        """
+        if 'system' not in raw:
+            return config
+            
+        sys_cfg = raw['system']
+        config.system_name = sys_cfg.get('name', config.system_name)
+        config.version = sys_cfg.get('version', config.version)
+        config.log_level = sys_cfg.get('log_level', config.log_level)
+        config.log_dir = sys_cfg.get('log_dir', config.log_dir)
         
+        return config
+    
+    def _parse_detection_config(self, config: TrafficConfig, raw: Dict[str, Any]) -> TrafficConfig:
+        """解析检测配置
+        
+        Args:
+            config: 当前配置对象
+            raw: 原始配置字典
+            
+        Returns:
+            更新后的配置对象
+        """
+        if 'detection' not in raw:
+            return config
+            
+        det_cfg = raw['detection']
+        
+        # 解析模型配置
+        if 'model' in det_cfg:
+            config.detection.model = self._create_model_config(det_cfg['model'])
+        
+        # 解析跟踪器配置
+        if 'tracker' in det_cfg:
+            config.detection.tracker = self._create_tracker_config(det_cfg['tracker'])
+        
+        return config
+    
+    def _create_model_config(self, model_dict: Dict[str, Any]) -> ModelConfig:
+        """创建模型配置对象
+        
+        Args:
+            model_dict: 模型配置字典
+            
+        Returns:
+            ModelConfig对象
+        """
+        return ModelConfig(
+            name=model_dict.get('name', 'yolo12n.pt'),
+            conf_threshold=model_dict.get('conf_threshold', 0.5),
+            iou_threshold=model_dict.get('iou_threshold', 0.45),
+            device=model_dict.get('device', 'auto'),
+            classes=model_dict.get('classes', [2, 3, 5, 7])
+        )
+    
+    def _create_tracker_config(self, tracker_dict: Dict[str, Any]) -> TrackerConfig:
+        """创建跟踪器配置对象
+        
+        Args:
+            tracker_dict: 跟踪器配置字典
+            
+        Returns:
+            TrackerConfig对象
+        """
+        return TrackerConfig(
+            type=tracker_dict.get('type', 'botsort'),
+            track_high_thresh=tracker_dict.get('track_high_thresh', 0.6),
+            track_low_thresh=tracker_dict.get('track_low_thresh', 0.1),
+            new_track_thresh=tracker_dict.get('new_track_thresh', 0.7),
+            track_buffer=tracker_dict.get('track_buffer', 60),
+            match_thresh=tracker_dict.get('match_thresh', 0.8),
+            proximity_thresh=tracker_dict.get('proximity_thresh', 0.5),
+            appearance_thresh=tracker_dict.get('appearance_thresh', 0.25),
+            cmc_method=tracker_dict.get('cmc_method', 'ecc'),
+            frame_rate=tracker_dict.get('frame_rate', 30),
+            lambda_=tracker_dict.get('lambda_', 0.985)
+        )
+    
+    def _parse_reid_config(self, config: TrafficConfig, raw: Dict[str, Any]) -> TrafficConfig:
+        """解析ReID配置
+        
+        Args:
+            config: 当前配置对象
+            raw: 原始配置字典
+            
+        Returns:
+            更新后的配置对象
+        """
+        if 'reid' not in raw:
+            return config
+            
+        reid_cfg = raw['reid']
+        
+        # 解析模型配置
+        if 'model' in reid_cfg:
+            config.reid = self._create_reid_model_config(reid_cfg['model'])
+        
+        # 解析匹配配置
+        if 'matching' in reid_cfg and config.reid:
+            config.reid = self._apply_reid_matching_config(
+                config.reid, reid_cfg['matching']
+            )
+        
+        return config
+    
+    def _create_reid_model_config(self, model_dict: Dict[str, Any]) -> ReidConfig:
+        """创建ReID模型配置对象
+        
+        Args:
+            model_dict: ReID模型配置字典
+            
+        Returns:
+            ReidConfig对象
+        """
+        return ReidConfig(
+            model_name=model_dict.get('name', 'veriwild_bagtricks_R50-ibn'),
+            model_path=model_dict.get('path', ''),
+            device=model_dict.get('device', 'auto'),
+            input_size=model_dict.get('input_size', [128, 256]),
+            feature_dim=model_dict.get('feature_dim', 2048)
+        )
+    
+    def _apply_reid_matching_config(self, config: ReidConfig, 
+                                     matching_dict: Dict[str, Any]) -> ReidConfig:
+        """应用ReID匹配配置
+        
+        Args:
+            config: 当前ReID配置
+            matching_dict: 匹配配置字典
+            
+        Returns:
+            更新后的ReID配置
+        """
+        config.similarity_threshold = matching_dict.get('similarity_threshold', 0.7)
+        config.top_k = matching_dict.get('top_k', 10)
         return config
     
     def _apply_env_overrides(self) -> None:

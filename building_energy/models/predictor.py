@@ -42,7 +42,94 @@ class PredictionResult:
         }
 
 
-class LSTMModel(nn.Module):
+class BaseRNNModel(nn.Module):
+    """RNN模型基类
+    
+    提取LSTM和GRU模型的公共组件，减少代码重复。
+    子类只需实现特定的RNN层创建逻辑。
+    """
+    
+    def __init__(
+        self,
+        input_size: int,
+        hidden_size: int = 128,
+        num_layers: int = 2,
+        output_size: int = 1,
+        dropout: float = 0.2
+    ):
+        """
+        初始化RNN基类模型
+        
+        Args:
+            input_size: 输入特征维度
+            hidden_size: 隐藏层维度
+            num_layers: RNN层数
+            output_size: 输出维度
+            dropout: Dropout概率
+        """
+        super(BaseRNNModel, self).__init__()
+        
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.output_size = output_size
+        self.dropout_rate = dropout
+        
+        # 子类需要设置 self.rnn
+        self.rnn = None
+        
+        # 公共层
+        self.dropout = nn.Dropout(dropout)
+        self.fc = nn.Linear(hidden_size, output_size)
+    
+    def _create_rnn_layer(self, rnn_type: str) -> nn.Module:
+        """创建RNN层，由子类调用
+        
+        Args:
+            rnn_type: RNN类型 ('LSTM' 或 'GRU')
+            
+        Returns:
+            RNN层模块
+        """
+        rnn_class = nn.LSTM if rnn_type == 'LSTM' else nn.GRU
+        return rnn_class(
+            input_size=self.input_size,
+            hidden_size=self.hidden_size,
+            num_layers=self.num_layers,
+            batch_first=True,
+            dropout=self.dropout_rate if self.num_layers > 1 else 0
+        )
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        前向传播
+        
+        Args:
+            x: 输入张量 (batch_size, seq_len, input_size)
+        
+        Returns:
+            输出张量 (batch_size, output_size)
+        """
+        raise NotImplementedError("子类必须实现forward方法")
+    
+    def _extract_last_hidden(self, hidden_state) -> torch.Tensor:
+        """提取最后一个时间步的隐藏状态
+        
+        Args:
+            hidden_state: RNN返回的隐藏状态
+            
+        Returns:
+            最后一个时间步的隐藏状态
+        """
+        # LSTM返回 (hidden, cell)，GRU返回 hidden
+        if isinstance(hidden_state, tuple):
+            hidden = hidden_state[0]
+        else:
+            hidden = hidden_state
+        return hidden[-1]
+
+
+class LSTMModel(BaseRNNModel):
     """LSTM预测模型"""
     
     def __init__(
@@ -63,21 +150,14 @@ class LSTMModel(nn.Module):
             output_size: 输出维度
             dropout: Dropout概率
         """
-        super(LSTMModel, self).__init__()
-        
-        self.hidden_size = hidden_size
-        self.num_layers = num_layers
-        
-        self.lstm = nn.LSTM(
+        super(LSTMModel, self).__init__(
             input_size=input_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
-            batch_first=True,
-            dropout=dropout if num_layers > 1 else 0
+            output_size=output_size,
+            dropout=dropout
         )
-        
-        self.dropout = nn.Dropout(dropout)
-        self.fc = nn.Linear(hidden_size, output_size)
+        self.rnn = self._create_rnn_layer('LSTM')
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -90,7 +170,7 @@ class LSTMModel(nn.Module):
             输出张量 (batch_size, output_size)
         """
         # LSTM层
-        lstm_out, (hidden, cell) = self.lstm(x)
+        lstm_out, (hidden, cell) = self.rnn(x)
         
         # 取最后一个时间步的隐藏状态
         out = self.dropout(hidden[-1])
@@ -99,7 +179,7 @@ class LSTMModel(nn.Module):
         return out
 
 
-class GRUModel(nn.Module):
+class GRUModel(BaseRNNModel):
     """GRU预测模型"""
     
     def __init__(
@@ -120,21 +200,14 @@ class GRUModel(nn.Module):
             output_size: 输出维度
             dropout: Dropout概率
         """
-        super(GRUModel, self).__init__()
-        
-        self.hidden_size = hidden_size
-        self.num_layers = num_layers
-        
-        self.gru = nn.GRU(
+        super(GRUModel, self).__init__(
             input_size=input_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
-            batch_first=True,
-            dropout=dropout if num_layers > 1 else 0
+            output_size=output_size,
+            dropout=dropout
         )
-        
-        self.dropout = nn.Dropout(dropout)
-        self.fc = nn.Linear(hidden_size, output_size)
+        self.rnn = self._create_rnn_layer('GRU')
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -146,7 +219,7 @@ class GRUModel(nn.Module):
         Returns:
             输出张量 (batch_size, output_size)
         """
-        gru_out, hidden = self.gru(x)
+        gru_out, hidden = self.rnn(x)
         out = self.dropout(hidden[-1])
         out = self.fc(out)
         return out
