@@ -5,30 +5,45 @@
 """
 import cv2
 import numpy as np
-from typing import Literal
+from typing import Literal, Final
+
+# 常量定义
+GAMMA_MIN: Final[float] = 0.1
+GAMMA_MAX: Final[float] = 3.0
+GAMMA_DEFAULT: Final[float] = 0.5
+BRIGHTNESS_THRESHOLD_DEFAULT: Final[int] = 50
 
 
 class LowLightEnhancer:
     """低光照图像增强器"""
     
     def __init__(self, method: Literal['clahe', 'gamma', 'msrcr'] = 'clahe',
-                 brightness_threshold: int = 50,
+                 brightness_threshold: int = BRIGHTNESS_THRESHOLD_DEFAULT,
                  clip_limit: float = 3.0,
                  tile_size: int = 8,
-                 gamma: float = 0.5):
+                 gamma: float = GAMMA_DEFAULT):
         """
         Args:
             method: 增强算法
             brightness_threshold: 亮度阈值，低于此值才增强
             clip_limit: CLAHE剪切限制
             tile_size: CLAHE网格大小
-            gamma: Gamma校正值
+            gamma: Gamma校正值 (范围: 0.1-3.0)
+            
+        Raises:
+            ValueError: 当gamma值超出有效范围时
         """
         self.method = method
         self.brightness_threshold = brightness_threshold
         self.clip_limit = clip_limit
         self.tile_size = tile_size
-        self.gamma = gamma
+        self.gamma = self._validate_gamma(gamma)
+        
+    def _validate_gamma(self, gamma: float) -> float:
+        """验证gamma参数范围"""
+        if not GAMMA_MIN <= gamma <= GAMMA_MAX:
+            raise ValueError(f"gamma值必须在 {GAMMA_MIN} 到 {GAMMA_MAX} 之间，当前值: {gamma}")
+        return gamma
         
         # 初始化CLAHE
         self.clahe = cv2.createCLAHE(

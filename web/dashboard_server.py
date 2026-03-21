@@ -15,27 +15,86 @@ import sys
 import json
 import time
 import threading
+import os
+import warnings
 from pathlib import Path
 from datetime import datetime, timedelta
 from collections import deque
+from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from flask import Flask, render_template, jsonify, request
-from flask_socketio import SocketIO, emit
-import cv2
-import numpy as np
+try:
+    from flask import Flask, render_template, jsonify, request
+    from flask_socketio import SocketIO, emit
+    FLASK_AVAILABLE = True
+except ImportError as e:
+    FLASK_AVAILABLE = False
+    warnings.warn(f"Flask not installed: {e}. Dashboard server will not be available.")
+    # 创建占位符类以避免NameError
+    class Flask:
+        def __init__(self, *args, **kwargs): pass
+    class SocketIO:
+        def __init__(self, *args, **kwargs): pass
+        def on(self, *args, **kwargs): return lambda f: f
 
-# 导入我们的模块
-from corridor_light.light_zones import LightConfig
-from corridor_light.multi_camera_calibrator import MultiCameraCalibrator
-from corridor_light.brightness_analyzer import BrightnessExtractor
-from classroom_ac.thermal_controller import HeatLoadCalculator, PredictiveACController
-from shared.data_recorder import DataRecorder, HeatmapGenerator, EnergyEstimator
+try:
+    import cv2
+    import numpy as np
+    CV_AVAILABLE = True
+except ImportError as e:
+    CV_AVAILABLE = False
+    warnings.warn(f"OpenCV or NumPy not installed: {e}")
+    np = None
+
+# 导入我们的模块（带错误处理）
+try:
+    from corridor_light.light_zones import LightConfig
+    LIGHT_ZONES_AVAILABLE = True
+except ImportError as e:
+    LIGHT_ZONES_AVAILABLE = False
+    LightConfig = None
+    warnings.warn(f"corridor_light.light_zones not available: {e}")
+
+try:
+    from corridor_light.multi_camera_calibrator import MultiCameraCalibrator
+    CALIBRATOR_AVAILABLE = True
+except ImportError as e:
+    CALIBRATOR_AVAILABLE = False
+    MultiCameraCalibrator = None
+    warnings.warn(f"corridor_light.multi_camera_calibrator not available: {e}")
+
+try:
+    from corridor_light.brightness_analyzer import BrightnessExtractor
+    BRIGHTNESS_AVAILABLE = True
+except ImportError as e:
+    BRIGHTNESS_AVAILABLE = False
+    BrightnessExtractor = None
+    warnings.warn(f"corridor_light.brightness_analyzer not available: {e}")
+
+try:
+    from classroom_ac.thermal_controller import HeatLoadCalculator, PredictiveACController
+    THERMAL_AVAILABLE = True
+except ImportError as e:
+    THERMAL_AVAILABLE = False
+    HeatLoadCalculator = None
+    PredictiveACController = None
+    warnings.warn(f"classroom_ac.thermal_controller not available: {e}")
+
+try:
+    from shared.data_recorder import DataRecorder, HeatmapGenerator, EnergyEstimator
+    DATA_RECORDER_AVAILABLE = True
+except ImportError as e:
+    DATA_RECORDER_AVAILABLE = False
+    DataRecorder = None
+    HeatmapGenerator = None
+    EnergyEstimator = None
+    warnings.warn(f"shared.data_recorder not available: {e}")
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'smart-energy-dashboard'
+# 从环境变量读取SECRET_KEY，如果没有则使用默认值（仅用于开发）
+app.config['SECRET_KEY'] = os.environ.get('DASHBOARD_SECRET_KEY', 'smart-energy-dashboard-dev')
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 

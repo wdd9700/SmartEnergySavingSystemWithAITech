@@ -8,7 +8,11 @@ from pathlib import Path
 from datetime import datetime
 
 
-def setup_logger(name: str, log_dir: str = "logs", level=logging.INFO) -> logging.Logger:
+LOG_FORMAT = '%(asctime)s | %(name)s | %(levelname)s | %(message)s'
+LOG_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+
+
+def setup_logger(name: str, log_dir: str = "logs", level: int = logging.INFO) -> logging.Logger:
     """配置日志记录器"""
     
     # 创建日志目录
@@ -22,10 +26,7 @@ def setup_logger(name: str, log_dir: str = "logs", level=logging.INFO) -> loggin
         return logger
     
     # 格式化
-    formatter = logging.Formatter(
-        '%(asctime)s | %(name)s | %(levelname)s | %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
+    formatter = logging.Formatter(LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
     
     # 控制台输出
     console_handler = logging.StreamHandler(sys.stdout)

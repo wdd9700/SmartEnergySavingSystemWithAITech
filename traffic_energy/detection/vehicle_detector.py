@@ -24,13 +24,18 @@ import torch
 try:
     from ultralytics import YOLO
     ULTRALYTICS_AVAILABLE = True
-except ImportError:
+except ImportError as e:
     ULTRALYTICS_AVAILABLE = False
     YOLO = None
+    import warnings
+    warnings.warn(f"Ultralytics not installed: {e}. VehicleDetector will not be available.")
 
-from shared.logger import setup_logger
-
-logger = setup_logger("vehicle_detector")
+try:
+    from shared.logger import setup_logger
+    logger = setup_logger("vehicle_detector")
+except ImportError:
+    import logging
+    logger = logging.getLogger("vehicle_detector")
 
 
 # COCO数据集车辆类别映射

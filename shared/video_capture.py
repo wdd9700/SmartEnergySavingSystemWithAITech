@@ -9,6 +9,13 @@ import threading
 from typing import Optional, Callable, Union
 from pathlib import Path
 
+import numpy as np
+
+# 常量定义
+DEFAULT_START_TIMEOUT_SECONDS = 5.0  # 启动超时时间
+FRAME_WAIT_INTERVAL = 0.01  # 帧等待间隔（秒）
+DEFAULT_BUFFER_SIZE = 1  # 默认缓冲区大小
+
 
 class VideoCapture:
     """线程安全的视频捕获封装"""
@@ -48,10 +55,9 @@ class VideoCapture:
         self._thread.start()
         
         # 等待第一帧
-        timeout = 5.0
         start = time.time()
-        while self.frame is None and time.time() - start < timeout:
-            time.sleep(0.01)
+        while self.frame is None and time.time() - start < DEFAULT_START_TIMEOUT_SECONDS:
+            time.sleep(FRAME_WAIT_INTERVAL)
         
         return self.frame is not None
     
@@ -125,7 +131,3 @@ class FrameProcessor:
             self.last_process_time = now
             return True
         return False
-
-
-# 解决循环导入
-import numpy as np

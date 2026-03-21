@@ -123,5 +123,6 @@ class LightController:
                 import RPi.GPIO as GPIO
                 GPIO.cleanup()
                 print("GPIO清理完成")
-            except:
-                pass
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning(f"GPIO清理失败: {e}")

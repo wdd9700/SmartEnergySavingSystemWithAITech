@@ -6,10 +6,10 @@
 import yaml
 import argparse
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 
-def load_config(config_path: str, defaults: Dict[str, Any] = None) -> Dict[str, Any]:
+def load_config(config_path: str, defaults: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     加载YAML配置文件
     

@@ -15,8 +15,9 @@ import time
 import logging
 import signal
 import threading
+import importlib
 from pathlib import Path
-from typing import Dict, Any, Optional, List, Callable
+from typing import Dict, Any, Optional, List, Callable, Tuple
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 from enum import Enum
@@ -34,46 +35,68 @@ if str(project_root) not in sys.path:
 # 导入配置管理
 from building_energy.config.manager import ConfigManager, get_config
 
+
+def try_import_module(module_name: str, class_names: Optional[List[str]] = None) -> Tuple[bool, Dict[str, Any]]:
+    """
+    尝试导入模块并返回导入结果
+    
+    Args:
+        module_name: 模块名称
+        class_names: 需要导入的类名列表
+        
+    Returns:
+        Tuple[bool, Dict]: (是否成功, {类名: 类或None})
+    """
+    result = {}
+    try:
+        module = importlib.import_module(module_name)
+        if class_names:
+            for class_name in class_names:
+                result[class_name] = getattr(module, class_name, None)
+        return True, result
+    except ImportError as e:
+        logging.warning(f"{module_name} not available: {e}")
+        if class_names:
+            for class_name in class_names:
+                result[class_name] = None
+        return False, result
+
+
 # 导入核心模块
-try:
-    from building_energy.models.anomaly_detector import AnomalyDetector, AnomalyAlert
-    ANOMALY_AVAILABLE = True
-except ImportError as e:
-    ANOMALY_AVAILABLE = False
-    logging.warning(f"AnomalyDetector not available: {e}")
-    AnomalyAlert = None
+ANOMALY_AVAILABLE, anomaly_classes = try_import_module(
+    'building_energy.models.anomaly_detector',
+    ['AnomalyDetector', 'AnomalyAlert']
+)
+AnomalyDetector = anomaly_classes.get('AnomalyDetector')
+AnomalyAlert = anomaly_classes.get('AnomalyAlert')
 
-try:
-    from building_energy.knowledge.graph_rag import KnowledgeBase, QueryResult
-    KNOWLEDGE_AVAILABLE = True
-except ImportError as e:
-    KNOWLEDGE_AVAILABLE = False
-    logging.warning(f"KnowledgeBase not available: {e}")
-    QueryResult = None
+KNOWLEDGE_AVAILABLE, knowledge_classes = try_import_module(
+    'building_energy.knowledge.graph_rag',
+    ['KnowledgeBase', 'QueryResult']
+)
+KnowledgeBase = knowledge_classes.get('KnowledgeBase')
+QueryResult = knowledge_classes.get('QueryResult')
 
-try:
-    from building_energy.models.predictor import EnergyPredictor, PredictionResult
-    PREDICTOR_AVAILABLE = True
-except ImportError as e:
-    PREDICTOR_AVAILABLE = False
-    logging.warning(f"EnergyPredictor not available: {e}")
-    PredictionResult = None
+PREDICTOR_AVAILABLE, predictor_classes = try_import_module(
+    'building_energy.models.predictor',
+    ['EnergyPredictor', 'PredictionResult']
+)
+EnergyPredictor = predictor_classes.get('EnergyPredictor')
+PredictionResult = predictor_classes.get('PredictionResult')
 
 # 导入HVAC环境（如果可用）
-try:
-    from building_energy.env.hvac_env import HVACEnv
-    HVAC_ENV_AVAILABLE = True
-except ImportError as e:
-    HVAC_ENV_AVAILABLE = False
-    logging.warning(f"HVACEnv not available: {e}")
+HVAC_ENV_AVAILABLE, hvac_classes = try_import_module(
+    'building_energy.env.hvac_env',
+    ['HVACEnv']
+)
+HVACEnv = hvac_classes.get('HVACEnv')
 
 # 导入建筑模拟器（如果可用）
-try:
-    from building_energy.core.building_simulator import BuildingSimulator
-    SIMULATOR_AVAILABLE = True
-except ImportError as e:
-    SIMULATOR_AVAILABLE = False
-    logging.warning(f"BuildingSimulator not available: {e}")
+SIMULATOR_AVAILABLE, simulator_classes = try_import_module(
+    'building_energy.core.building_simulator',
+    ['BuildingSimulator']
+)
+BuildingSimulator = simulator_classes.get('BuildingSimulator')
 
 logger = logging.getLogger(__name__)
 
