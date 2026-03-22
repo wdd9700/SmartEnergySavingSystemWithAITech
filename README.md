@@ -792,3 +792,6 @@ cameras:
 ### 系统监控
 - [psutil](https://github.com/giampaolo/psutil) - 系统监控
 - [APScheduler](https://apscheduler.readthedocs.io/) - 任务调度
+## 独立项目
+
+- **Model Converter**: 3D模型到Three.js的转换模块现已提取为独立仓库，详见 [ModelConverter](https://github.com/wdd9700/ModelConverter)
