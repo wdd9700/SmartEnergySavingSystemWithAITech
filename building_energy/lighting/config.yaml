@@ -1,0 +1,120 @@
+# 人因照明与预测性开关配置
+
+# 昼夜节律配置
+circadian:
+  # 地理位置 (默认北京)
+  latitude: 39.9
+  longitude: 116.4
+  
+  # 时间段配置
+  schedule:
+    morning:
+      start: "06:00"
+      end: "09:00"
+      color_temperature: 6500    # K
+      brightness: 1.0            # 0-1
+      description: "冷白光，提神醒脑"
+    
+    work:
+      start: "09:00"
+      end: "17:00"
+      color_temperature: 4500
+      brightness: 0.9
+      description: "自然白光，保持专注"
+    
+    evening:
+      start: "17:00"
+      end: "20:00"
+      color_temperature: 3500
+      brightness: 0.7
+      description: "暖白光，放松过渡"
+    
+    night:
+      start: "20:00"
+      end: "06:00"
+      color_temperature: 2700
+      brightness: 0.4
+      description: "暖黄光，促进睡眠"
+  
+  # 过渡时间 (分钟)
+  transition_minutes: 30
+
+# 运动预测配置
+motion_prediction:
+  # 历史记录大小
+  history_size: 50
+  
+  # 置信度阈值
+  confidence_threshold: 0.6
+  
+  # 最小预测置信度
+  min_prediction_confidence: 0.5
+  
+  # 典型步行速度 (m/s)
+  typical_walking_speed: 1.2
+  
+  # 像素到米转换比例 (像素/米)
+  pixels_per_meter: 100
+
+# 预测性照明控制配置
+predictive_control:
+  # 预热阈值 (秒)
+  preheat_threshold: 10.0
+  
+  # 完全开启阈值 (秒)
+  activate_threshold: 5.0
+  
+  # 亮度设置
+  preheat_brightness: 0.3      # 预热亮度
+  normal_brightness: 0.9       # 正常亮度
+  
+  # 超时设置
+  preheat_timeout: 15.0        # 预热超时
+  light_off_delay: 5.0         # 关灯延迟
+  
+  # 误预测处理
+  false_prediction_penalty: 2.0    # 惩罚时间 (秒)
+  max_consecutive_false: 3         # 最大连续误预测
+  
+  # 色温控制
+  enable_circadian: true
+  color_temp_transition_time: 2.0  # 色温过渡时间 (秒)
+
+# 区域布局示例 (根据实际场景修改)
+zone_layout:
+  zones:
+    - id: "zone_1"
+      name: "走廊入口"
+      center: [100, 200]
+      radius: 80
+      neighbors:
+        east: "zone_2"
+      typical_transition_time: 5.0
+    
+    - id: "zone_2"
+      name: "走廊中段"
+      center: [300, 200]
+      radius: 80
+      neighbors:
+        west: "zone_1"
+        east: "zone_3"
+      typical_transition_time: 5.0
+    
+    - id: "zone_3"
+      name: "走廊出口"
+      center: [500, 200]
+      radius: 80
+      neighbors:
+        west: "zone_2"
+      typical_transition_time: 5.0
+
+# 调试配置
+debug:
+  # 启用详细日志
+  verbose: false
+  
+  # 保存预测日志
+  save_prediction_log: false
+  
+  # 预测日志文件
+  prediction_log_file: "logs/predictions.log"

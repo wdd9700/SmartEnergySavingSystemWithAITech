@@ -5,6 +5,13 @@ from .vehicle_detector import VehicleDetector, Detection
 from .vehicle_tracker import VehicleTracker, Track
 from .speed_estimator import SpeedEstimator
 from .camera_processor import CameraProcessor
+from .plate_classifier import (
+    PlateClassifier,
+    PlateClassificationResult,
+    PlateColor,
+    PowerType,
+    VehicleDetectorWithPlate
+)
 
 __all__ = [
     'VehicleDetector',
@@ -12,5 +19,10 @@ __all__ = [
     'VehicleTracker',
     'Track',
     'SpeedEstimator',
-    'CameraProcessor'
+    'CameraProcessor',
+    'PlateClassifier',
+    'PlateClassificationResult',
+    'PlateColor',
+    'PowerType',
+    'VehicleDetectorWithPlate'
 ]

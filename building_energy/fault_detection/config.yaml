@@ -1,0 +1,197 @@
+# 预测偏差故障检测系统配置
+# Module 1C - 预测偏差故障检测
+
+# 版本信息
+version: "1.0.0"
+module_name: "fault_detection"
+
+# ============================================================
+# 预测监控器配置 (PredictorMonitor)
+# ============================================================
+monitor:
+  # 历史数据最大保存数量（默认7天，每小时采样）
+  max_history_size: 168
+  
+  # 采样间隔（秒）
+  sampling_interval: 3600
+  
+  # 降级方案配置（当PINN不可用时使用）
+  fallback_model:
+    # 房间默认参数
+    room_area: 50.0          # 房间面积 (m²)
+    room_height: 3.0         # 房间高度 (m)
+    wall_u_value: 0.5        # 墙体U值 (W/m²K)
+    window_u_value: 2.5      # 窗户U值 (W/m²K)
+    window_area_ratio: 0.2   # 窗户面积比例
+    cop_cooling: 3.0         # 制冷COP
+    cop_heating: 3.5         # 制热COP
+    internal_gain_per_person: 100.0  # 人均内部得热 (W)
+
+# ============================================================
+# 偏差分析器配置 (DeviationAnalyzer)
+# ============================================================
+analyzer:
+  # 滑动窗口大小（样本数）
+  window_size: 168
+  
+  # 偏差阈值配置
+  thresholds:
+    temperature: 2.0       # 温度偏差阈值 (°C)
+    humidity: 10.0         # 湿度偏差阈值 (%)
+    power: 1.0             # 功耗偏差阈值 (kW)
+    historical_fit: 0.7    # 历史拟合度阈值 (0-1)
+  
+  # 历史拟合度评估配置
+  historical_fit:
+    reference_window_hours: 168  # 参考时间窗口（7天）
+    min_samples: 24              # 最少样本数（1天）
+
+# ============================================================
+# 故障定位器配置 (FaultLocator)
+# ============================================================
+locator:
+  # 故障判定阈值
+  fault_thresholds:
+    temperature: 2.0       # 温度故障阈值 (°C)
+    humidity: 15.0         # 湿度故障阈值 (%)
+    power: 1.0             # 功耗偏差阈值 (kW)
+  
+  # 置信度配置
+  confidence:
+    min_confidence: 0.6    # 最小置信度阈值
+    
+    # 故障类型权重
+    type_weights:
+      ac: 0.9              # 空调故障权重
+      sensor: 0.7          # 传感器故障权重
+      humidity: 0.8        # 湿度故障权重
+      power: 0.75          # 供电故障权重
+
+# ============================================================
+# 告警系统配置 (FaultAlerter)
+# ============================================================
+alerter:
+  # 告警抑制期（分钟）
+  suppression_periods:
+    low: 60        # 轻微告警抑制1小时
+    medium: 30     # 一般告警抑制30分钟
+    high: 15       # 严重告警抑制15分钟
+    critical: 5    # 紧急告警抑制5分钟
+  
+  # 通知间隔（分钟）
+  notification_intervals:
+    low: 240       # 轻微告警每4小时通知
+    medium: 120    # 一般告警每2小时通知
+    high: 60       # 严重告警每小时通知
+    critical: 15   # 紧急告警每15分钟通知
+  
+  # 历史记录限制
+  max_history_size: 1000
+  
+  # 通知配置
+  notifications:
+    # 控制台输出
+    console: true
+    
+    # 文件日志
+    file:
+      enabled: true
+      path: "logs/fault_alerts.log"
+    
+    # 邮件通知（可选）
+    email:
+      enabled: false
+      smtp_server: "smtp.example.com"
+      smtp_port: 587
+      username: ""
+      password: ""
+      from_addr: "fault-detection@building.com"
+      to_addrs: []
+    
+    # Webhook通知（可选）
+    webhook:
+      enabled: false
+      url: ""
+      headers: {}
+
+# ============================================================
+# 设备区域映射配置
+# ============================================================
+zones:
+  # 区域配置示例
+  zone_1:
+    name: "教室A101"
+    device_id: "hvac_001"
+    setpoint_temp: 24.0
+    area: 60.0
+    
+  zone_2:
+    name: "教室A102"
+    device_id: "hvac_002"
+    setpoint_temp: 24.0
+    area: 60.0
+    
+  zone_3:
+    name: "走廊东段"
+    device_id: "hvac_003"
+    setpoint_temp: 26.0
+    area: 100.0
+
+# ============================================================
+# 故障检测规则配置
+# ============================================================
+rules:
+  # 温度偏差规则
+  temperature:
+    # 偏差分级
+    levels:
+      low: 1.5             # >1.5°C 轻微
+      medium: 2.0          # >2.0°C 一般
+      high: 3.0            # >3.0°C 严重
+      critical: 5.0        # >5.0°C 紧急
+    
+    # 故障判定条件
+    fault_conditions:
+      - "temp_deviation > 2.0 and power_abnormal"
+      - "temp_deviation > 3.0 and historical_fit > 0.7"
+  
+  # 湿度偏差规则
+  humidity:
+    levels:
+      low: 10.0
+      medium: 15.0
+      high: 20.0
+      critical: 30.0
+    
+    fault_conditions:
+      - "humidity_deviation > 15.0"
+  
+  # 功耗偏差规则
+  power:
+    levels:
+      low: 0.5
+      medium: 1.0
+      high: 2.0
+      critical: 3.0
+    
+    fault_conditions:
+      - "power_deviation > 1.0 and temp_normal"
+
+# ============================================================
+# 性能指标目标
+# ============================================================
+targets:
+  fault_detection_accuracy: 0.85    # 故障检测准确率 > 85%
+  false_positive_rate: 0.05         # 误报率 < 5%
+  detection_latency_minutes: 5      # 检测延迟 < 5分钟
+  location_precision: "device"       # 定位精度：设备级
+
+# ============================================================
+# 日志配置
+# ============================================================
+logging:
+  level: "INFO"              # 日志级别: DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/fault_detection.log"
+  max_bytes: 10485760        # 10MB
+  backup_count: 5

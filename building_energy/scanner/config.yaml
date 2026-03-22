@@ -1,0 +1,195 @@
+# 进程监控与定期扫描系统配置
+# Module-3E: Process Scanner Configuration
+
+scanner:
+  # 扫描间隔（分钟）
+  scan_interval_minutes: 10
+  
+  # 长时间运行阈值（分钟）
+  # 超过此时间的进程被视为长时间运行
+  long_running_threshold: 30
+  
+  # 日志级别: DEBUG, INFO, WARNING, ERROR
+  log_level: INFO
+  
+  # 是否启用自动扫描
+  auto_scan: true
+  
+  # 最大缓存进程数
+  max_cache_size: 1000
+
+whitelist:
+  # 系统进程白名单（始终保护）
+  system_processes:
+    # Windows 系统核心进程
+    - svchost.exe
+    - csrss.exe
+    - smss.exe
+    - services.exe
+    - lsass.exe
+    - winlogon.exe
+    - explorer.exe
+    - dwm.exe
+    - system
+    - registry
+    - memory compression
+    - system interrupts
+    - idle
+    - wininit.exe
+    - fontdrvhost.exe
+    - dllhost.exe
+    - wmiprvse.exe
+    - runtimebroker.exe
+    - sihost.exe
+    - taskhostw.exe
+    - shellhost.exe
+    - searchindexer.exe
+    - searchfilterhost.exe
+    - searchprotocolhost.exe
+    - spoolsv.exe
+    - msmpeng.exe
+    - nissrv.exe
+    - securityhealthservice.exe
+    - wlanext.exe
+    - conhost.exe
+    - consent.exe
+    - taskmgr.exe
+    - cmd.exe
+    - powershell.exe
+    - pwsh.exe
+    # Python 进程
+    - python.exe
+    - python3.exe
+    - python
+    - python3
+    - pythonw.exe
+    - py.exe
+
+  # 用户自定义白名单（可手动添加）
+  user_processes: []
+
+  # 正则表达式模式匹配
+  patterns:
+    - ".*system.*"      # 包含 system 的进程
+    - ".*service.*"    # 包含 service 的进程
+    - ".*daemon.*"     # 包含 daemon 的进程（Linux）
+
+  # 自动更新白名单
+  auto_update: true
+
+# 长时间运行任务保护规则
+protection_rules:
+  # 训练任务
+  training:
+    enabled: true
+    patterns:
+      - "train.py"
+      - "train"
+      - "fit.py"
+      - "model.py"
+      - "tensorflow"
+      - "pytorch"
+      - "python.exe"
+      - "python3.exe"
+    min_runtime_minutes: 5  # 最少运行时间才保护
+
+  # 渲染任务
+  rendering:
+    enabled: true
+    patterns:
+      - "blender.exe"
+      - "maya.exe"
+      - "render.exe"
+      - "3dsmax.exe"
+      - "cinema4d.exe"
+      - "houdini.exe"
+      - "vray.exe"
+    min_runtime_minutes: 10
+
+  # 编译任务
+  compilation:
+    enabled: true
+    patterns:
+      - "cl.exe"
+      - "gcc.exe"
+      - "msbuild.exe"
+      - "make.exe"
+      - "cmake.exe"
+      - "ninja.exe"
+      - "devenv.exe"
+    min_runtime_minutes: 5
+
+  # 仿真任务
+  simulation:
+    enabled: true
+    patterns:
+      - "ansys.exe"
+      - "comsol.exe"
+      - "matlab.exe"
+      - "simulink.exe"
+      - "abaqus.exe"
+      - "fluent.exe"
+      - "starccm.exe"
+    min_runtime_minutes: 10
+
+# 系统后台服务保护
+background_services:
+  enabled: true
+  patterns:
+    - "sqlservr.exe"
+    - "mysqld.exe"
+    - "postgres.exe"
+    - "mongod.exe"
+    - "redis-server.exe"
+    - "nginx.exe"
+    - "apache.exe"
+    - "iis.exe"
+    - "docker.exe"
+    - "containerd.exe"
+    - "kubelet.exe"
+
+# 资源限制
+resource_limits:
+  # 单次扫描最大CPU时间（毫秒）
+  max_scan_cpu_ms: 100
+  
+  # 单次扫描最大内存使用（MB）
+  max_scan_memory_mb: 50
+  
+  # 查询接口最大响应时间（毫秒）
+  max_query_response_ms: 1
+
+# 调度器配置
+scheduler:
+  # 使用APScheduler
+  use_apscheduler: true
+  
+  # 调度器线程池大小
+  thread_pool_size: 2
+  
+  # 作业存储
+  job_store:
+    type: memory  # memory 或 sqlalchemy
+    
+  # 错过执行后的最大合并次数
+  max_instances: 1
+  
+  # 错过执行后的补偿行为
+  misfire_grace_time: 300  # 5分钟
+
+# 导出配置
+export:
+  # 是否定期导出扫描结果
+  enabled: false
+  
+  # 导出间隔（分钟）
+  interval_minutes: 60
+  
+  # 导出目录
+  output_dir: "./logs/scanner_exports"
+  
+  # 导出格式: json, yaml
+  format: json
+  
+  # 保留历史文件数量
+  max_history_files: 24

@@ -57,12 +57,20 @@ class Detection:
         class_id: 类别ID
         class_name: 类别名称
         track_id: 跟踪ID（如果有）
+        plate_bbox: 车牌边界框坐标 [x1, y1, x2, y2]（可选）
+        plate_color: 车牌颜色 (blue/green/yellow/white/black/unknown)
+        vehicle_power_type: 车辆动力类型 (fuel/electric/unknown)
+        plate_confidence: 车牌识别置信度
     """
     bbox: np.ndarray
     confidence: float
     class_id: int
     class_name: str
     track_id: Optional[int] = None
+    plate_bbox: Optional[np.ndarray] = None
+    plate_color: Optional[str] = None
+    vehicle_power_type: Optional[str] = None
+    plate_confidence: float = 0.0
     
     @property
     def center(self) -> Tuple[float, float]:

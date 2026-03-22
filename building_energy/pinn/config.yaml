@@ -1,0 +1,141 @@
+# PINN Training Configuration
+# Physics-Informed Neural Network for Building Thermal Modeling
+
+# Module Information
+module:
+  name: "ThermalPINN"
+  version: "1.0.0"
+  description: "Physics-Informed Neural Network for building thermal modeling"
+
+# Backend Configuration
+backend:
+  # Preferred backend: pytorch, mindspore, paddle, tensorflow
+  preferred: "pytorch"
+  # Auto-fallback order if preferred is not available
+  fallback_order:
+    - "pytorch"
+    - "mindspore"
+    - "paddle"
+
+# Room Parameters (default values)
+room:
+  wall_thickness: 0.2  # meters (0.1 - 0.5)
+  room_volume: 50.0    # cubic meters (20 - 200)
+  ac_position: [2.5, 2.5, 2.0]  # [x, y, z] in meters
+  ac_power: 2.5        # kW (1 - 5)
+  window_area: 4.0     # m² (1 - 10)
+  insulation_factor: 1.0  # (0.5 - 2.0)
+
+# Neural Network Architecture
+network:
+  layer_sizes: [4, 64, 64, 64, 64, 64, 64, 1]  # [input, hidden..., output]
+  activation: "tanh"
+  initializer: "Glorot uniform"
+
+# Training Configuration
+training:
+  # Data generation
+  n_training_samples: 5000
+  n_validation_samples: 1000
+  
+  # Training parameters
+  epochs: 10000
+  learning_rate: 0.001
+  batch_size: 256
+  
+  # Loss weights
+  loss_weights:
+    pde: 1.0      # PDE residual loss
+    bc: 1.0       # Boundary condition loss
+    ic: 1.0       # Initial condition loss
+    data: 0.1     # Data fitting loss
+  
+  # Geometry and data points
+  geometry:
+    n_domain: 10000    # Interior points for PDE residual
+    n_boundary: 2000   # Boundary points
+    n_initial: 1000    # Initial condition points
+  
+  # Checkpointing
+  checkpoint:
+    interval: 1000
+    save_best_only: false
+    keep_last_n: 3
+  
+  # Early stopping
+  early_stopping:
+    enabled: true
+    patience: 1000
+    min_delta: 1.0e-6
+
+# CFD Simulation Configuration (for data generation)
+cfd:
+  grid:
+    nx: 15  # Grid points in x
+    ny: 15  # Grid points in y
+    nz: 8   # Grid points in z
+  
+  time:
+    dt: 120.0       # Time step in seconds
+    n_hours: 24     # Simulation duration
+    save_interval: 60  # Save every N time steps
+
+# External Conditions (for training data generation)
+conditions:
+  outdoor_temp:
+    min: -10.0
+    max: 40.0
+  
+  solar_radiation:
+    min: 0.0
+    max: 1000.0
+  
+  wind_speed:
+    min: 0.0
+    max: 20.0
+  
+  time_of_day:
+    min: 0.0
+    max: 24.0
+
+# NPU Configuration
+npu:
+  # Target NPU backend
+  target: "onnxruntime"  # Options: onnxruntime, ascend, mlu
+  
+  # ONNX export settings
+  onnx:
+    opset_version: 11
+    do_constant_folding: true
+    dynamic_axes:
+      input: [0]   # Batch dimension
+      output: [0]  # Batch dimension
+  
+  # Optimization passes
+  optimizations:
+    - "eliminate_identity"
+    - "fuse_consecutive_transposes"
+    - "fuse_pad_into_conv"
+    - "extract_constant_to_initializer"
+
+# Inference Configuration
+inference:
+  # Performance requirements
+  max_latency_ms: 100  # Maximum acceptable latency
+  batch_size: 1        # Default batch size
+  
+  # Spatial resolution for predictions
+  spatial_resolution: [10, 10, 5]  # [nx, ny, nz]
+
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  log_file: "logs/pinn_training.log"
+  log_to_console: true
+
+# Output Paths
+paths:
+  models: "models/pinn"
+  logs: "logs"
+  data: "data/pinn"
+  checkpoints: "models/pinn/checkpoints"

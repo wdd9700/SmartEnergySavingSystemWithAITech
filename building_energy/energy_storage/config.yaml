@@ -1,0 +1,47 @@
+# 储能管理系统配置
+
+# 电池参数配置
+battery:
+  capacity: 20.0              # 额定容量 (kWh)
+  max_charge_power: 10.0      # 最大充电功率 (kW)
+  max_discharge_power: 10.0   # 最大放电功率 (kW)
+  efficiency: 0.95            # 充放电效率 (0-1)
+  min_soc: 0.1                # 最小SOC (0-1)
+  max_soc: 0.9                # 最大SOC (0-1)
+  degradation_rate: 0.02      # 年衰减率 (0-1)
+  initial_soc: 0.5            # 初始SOC
+
+# 电价API配置
+price_api:
+  provider: "default"         # 电价提供商 (state_grid/third_party/default)
+  region: "beijing"           # 地区代码
+  cache_duration: 60          # 缓存有效期 (分钟)
+  # api_key: "your_api_key"   # API密钥 (用于第三方API)
+  # api_endpoint: "https://..." # API端点
+  
+  # 自定义电价 (元/kWh)
+  custom_prices:
+    valley: 0.3
+    flat: 0.6
+    peak: 1.0
+    critical: 1.5
+
+# 调度器配置
+scheduler:
+  objective: "balanced"       # 优化目标 (cost/comfort/grid/balanced)
+  weights:                    # 多目标权重
+    cost: 0.5
+    comfort: 0.3
+    grid: 0.2
+
+# 控制器配置
+controller:
+  control_interval: 60        # 控制周期 (秒)
+  schedule_horizon: 24        # 调度预测时长 (小时)
+  emergency_soc_min: 0.05     # 紧急SOC下限
+  emergency_soc_max: 0.95     # 紧急SOC上限
+
+# 日志配置
+logging:
+  level: "INFO"               # 日志级别 (DEBUG/INFO/WARNING/ERROR)
+  file: "energy_storage.log"  # 日志文件

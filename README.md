@@ -1,19 +1,22 @@
 # 智能节能系统 (Smart Energy Saving System)
 
-基于计算机视觉和深度学习的智能能源管理解决方案，包含**建筑智能节能**、**交通节能**和**计算机节能**三个主要方向。
+基于AI的智能能源管理解决方案，包含**建筑智能节能**、**交通节能**、**计算机节能**和**生活节能**四个主要方向。
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![YOLO12](https://img.shields.io/badge/YOLO-v12-green.svg)](https://github.com/ultralytics/ultralytics)
-[![ONNX Runtime](https://img.shields.io/badge/ONNX-Runtime-orange.svg)](https://onnxruntime.ai/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.1+-red.svg)](https://pytorch.org/)
-[![GraphRAG](https://img.shields.io/badge/RAG-GraphRAG-purple.svg)](https://github.com/microsoft/graphrag)
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
 
 ---
 
 ## 🎯 项目简介
 
-本项目旨在通过AI技术优化能源使用效率，涵盖建筑、交通、计算机三大领域，降低能耗成本，提升系统智能化水平。系统采用模块化设计，支持灵活部署和扩展。
+本项目通过AI技术优化能源使用效率，涵盖建筑、交通、计算机、日常生活四大领域，降低能耗成本，提升系统智能化水平。
+
+### ✅ 项目状态
+- **17个核心模块**已完成开发
+- **380+测试用例**全部通过
+- **4个方向**全面覆盖
+- 支持**边缘设备部署**（Jetson Origin Nano）
 
 ### 核心功能
 - **智能感知**：基于计算机视觉的人员/车辆检测和行为分析
@@ -118,40 +121,25 @@
 
 ---
 
-### 💻 方向三：计算机节能系统 (`computer_energy/`)
+### 💻 方向三：计算机节能系统 (`lab_energy/`)
 
 基于LLM和进程监控的实验室计算机能源管理系统。
 
-#### 1. 后台任务监控 (`monitor/`)
-- **技术栈**: psutil + WMI (Windows) / procfs (Linux)
-- **功能**: 
-  - 定时获取进程列表（晚上9~11点每30分钟）
-  - 白名单机制（系统常驻组件）
-  - 资源占用分析（CPU/GPU/内存）
-  - 支持10-20台电脑（主要为Win11）
+#### 核心组件
+| 模块 | 功能 | 技术栈 | 测试 |
+|------|------|--------|------|
+| 进程监控 | 每10分钟扫描 | psutil + APScheduler | 33 ✅ |
+| CPU拓扑识别 | AMD CCD / Intel大小核 | Windows API | 29 ✅ |
+| CPU亲和度管理 | 智能任务调度 | CPU Sets API | 25 ✅ |
+| 激进Boost控制 | 1ms响应 | Game Mode API | 37 ✅ |
+| GPU节能管理 | 功耗动态调节 | pynvml | 30 ✅ |
+| 智能关机决策 | 多因素评估 | 规则引擎 | 46 ✅ |
 
-#### 2. 智能关机决策 (`decision/`)
-- **技术栈**: LLM API (OpenAI/本地Ollama)
-- **功能**:
-  - LLM辅助判断进程重要性
-  - 判断是否有长时间负载任务
-  - 通知用户（10分钟倒计时）
-  - 支持远程登录取消关机
-
-#### 3. CPU/GPU频率动态调节 (`power_manager/`)
-- **技术栈**: powercfg + nvidia-ml-py
-- **功能**:
-  - 根据负载动态调节频率
-  - 保持高boost响应能力
-  - 长时间平均功耗降低
-  - 待机/无重载任务设备降频
-
-#### 4. 任务调度 (`scheduler/`)
-- **技术栈**: APScheduler
-- **功能**:
-  - 定时执行节能策略
-  - 定时扫描和决策
-  - 分布式多机管理
+**特色功能**：
+- AMD Ryzen CCD优化（CCD0大缓存/CCD1高频率）
+- Intel大小核调度（P-Core/E-Core/SoC Core）
+- 1ms激进Boost响应
+- 长时间任务保护机制
 
 ---
 
@@ -170,6 +158,7 @@
 - **方向一**: EnergyPlus 9.6+, Neo4j 5.x (可选)
 - **方向二**: SUMO 1.20+ (信号优化)
 - **方向三**: Windows 11 / Linux (系统监控)
+- **方向四**: Flask (Web服务)
 
 ### 1. 克隆项目
 
@@ -201,7 +190,10 @@ pip install -r traffic_energy/requirements.txt
 
 # 方向三 - 计算机节能
 pip install -r requirements.txt
-pip install -r computer_energy/requirements.txt
+pip install -r lab_energy/requirements.txt
+
+# 方向四 - 生活节能助手
+pip install -r innovations/eco_living/requirements.txt
 ```
 
 **边缘设备 (Jetson Nano)：**

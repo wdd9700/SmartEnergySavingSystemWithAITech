@@ -327,3 +327,115 @@ class CongestionDetector:
             'avg_speed': np.mean([s.avg_speed for s in self._history]),
             'current_trend': self.get_trend()
         }
+    
+    def detect_from_path_time_map(
+        self,
+        current_time: float,
+        baseline_time: float,
+        vehicle_count: int
+    ) -> CongestionLevel:
+        """基于路径-时间图检测拥堵 (Module 3B)
+        
+        使用通行时间比率来判断拥堵程度
+        
+        Args:
+            current_time: 当前平均通行时间 (秒)
+            baseline_time: 基准通行时间 (秒)
+            vehicle_count: 车辆数量
+            
+        Returns:
+            拥堵等级
+        """
+        if baseline_time <= 0 or vehicle_count < self.min_vehicles:
+            return CongestionLevel.FREE_FLOW
+        
+        ratio = current_time / baseline_time
+        
+        # 严重拥堵: 通行时间超过基准1.5倍
+        if ratio >= 1.5:
+            return CongestionLevel.SEVERE
+        
+        # 中度拥堵: 通行时间超过基准1.2倍
+        if ratio >= 1.2:
+            return CongestionLevel.MODERATE
+        
+        # 轻度拥堵: 通行时间超过基准1.1倍
+        if ratio >= 1.1:
+            return CongestionLevel.LIGHT
+        
+        return CongestionLevel.FREE_FLOW
+    
+    def calculate_congestion_from_travel_time(
+        self,
+        travel_time: float,
+        free_flow_time: float
+    ) -> Tuple[str, float]:
+        """根据通行时间计算拥堵等级和拥堵指数 (Module 3B)
+        
+        Args:
+            travel_time: 实际通行时间
+            free_flow_time: 自由流通行时间
+            
+        Returns:
+            (拥堵等级, 拥堵指数)
+        """
+        if free_flow_time <= 0:
+            return "unknown", 0.0
+        
+        ratio = travel_time / free_flow_time
+        congestion_index = max(0.0, ratio - 1.0)  # 拥堵指数
+        
+        if ratio < 1.2:
+            level = "low"
+        elif ratio < 1.5:
+            level = "medium"
+        else:
+            level = "high"
+        
+        return level, congestion_index
+    
+    def identify_congestion_hotspots(
+        self,
+        path_time_data: List[Dict],
+        threshold_ratio: float = 1.3
+    ) -> List[Dict]:
+        """识别拥堵热点 (Module 3B)
+        
+        Args:
+            path_time_data: 路径-时间数据列表
+                [{"path_id": str, "current_time": float, "baseline_time": float}, ...]
+            threshold_ratio: 拥堵阈值比率
+            
+        Returns:
+            拥堵热点列表
+        """
+        hotspots = []
+        
+        for data in path_time_data:
+            path_id = data.get("path_id")
+            current_time = data.get("current_time", 0)
+            baseline_time = data.get("baseline_time", 0)
+            
+            if baseline_time <= 0:
+                continue
+            
+            ratio = current_time / baseline_time
+            
+            if ratio >= threshold_ratio:
+                level, index = self.calculate_congestion_from_travel_time(
+                    current_time, baseline_time
+                )
+                
+                hotspots.append({
+                    "path_id": path_id,
+                    "congestion_level": level,
+                    "congestion_index": index,
+                    "current_time": current_time,
+                    "baseline_time": baseline_time,
+                    "delay_ratio": ratio
+                })
+        
+        # 按拥堵指数排序
+        hotspots.sort(key=lambda x: x["congestion_index"], reverse=True)
+        
+        return hotspots

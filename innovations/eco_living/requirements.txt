@@ -1,0 +1,18 @@
+# 生活节能减排助手依赖
+
+# Web框架
+flask>=2.3.0
+flask-cors>=4.0.0
+
+# 数据处理
+numpy>=1.24.0
+
+# LLM集成（可选）
+openai>=1.0.0
+
+# 环境变量管理
+python-dotenv>=1.0.0
+
+# 开发依赖
+pytest>=7.4.0
+pytest-cov>=4.1.0
